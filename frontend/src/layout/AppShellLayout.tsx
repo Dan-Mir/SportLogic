@@ -2,12 +2,13 @@ import {
   AppShell,
   Box,
   Burger,
+  Divider,
   Group,
   NavLink,
   ScrollArea,
+  Stack,
   Text,
   ThemeIcon,
-  Tooltip,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import {
@@ -18,6 +19,13 @@ import {
 import { NavLink as RouterNavLink, Outlet, useLocation } from "react-router-dom";
 import { useAppConfig } from "../config";
 
+const MODULE_ICONS: Record<string, typeof IconPuzzle> = {
+  core: IconPuzzle,
+  anagrafica: IconPuzzle,
+  corsi: IconPuzzle,
+  "booking.fields": IconPuzzle,
+};
+
 export default function AppShellLayout() {
   const [opened, { toggle }] = useDisclosure();
   const location = useLocation();
@@ -27,56 +35,75 @@ export default function AppShellLayout() {
   return (
     <AppShell
       header={{ height: 64 }}
-      navbar={{ width: 264, breakpoint: "sm", collapsed: { mobile: !opened } }}
-      padding="lg"
+      navbar={{ width: 272, breakpoint: "sm", collapsed: { mobile: !opened } }}
+      padding="xl"
     >
       <AppShell.Header
-        px="lg"
         style={{
           borderBottom: "1px solid var(--color-border)",
-          background: "var(--color-surface)",
+          background: "color-mix(in oklch, var(--color-surface) 88%, transparent)",
+          backdropFilter: "blur(12px)",
         }}
       >
-        <Group h="100%" justify="space-between" wrap="nowrap">
+        <Group h="100%" px="lg" justify="space-between" wrap="nowrap">
           <Group gap="sm" wrap="nowrap">
             <Burger opened={opened} onClick={toggle} hiddenFrom="sm" size="sm" />
             <Box
-              w={32}
-              h={32}
+              w={34}
+              h={34}
               bg={config.brand.primaryColor}
               style={{
-                borderRadius: 8,
+                borderRadius: 10,
                 display: "grid",
                 placeItems: "center",
                 flexShrink: 0,
+                boxShadow: "0 1px 3px oklch(24% 0.014 258 / 0.18)",
               }}
             >
               <Text c="white" fw={700} size="sm">
                 {config.brand.name.charAt(0).toUpperCase()}
               </Text>
             </Box>
-            <Box style={{ lineHeight: 1.15 }}>
-              <Text fw={650} size="sm">
+            <Box style={{ lineHeight: 1.2 }}>
+              <Text fw={650} size="sm" style={{ letterSpacing: "-0.01em" }}>
                 {config.brand.name}
               </Text>
-              <Text size="xs" c="dimmed">
-                Gestionale impianti
+              <Text size="xs" c="dimmed" className="mono-label">
+                on-premise
               </Text>
             </Box>
           </Group>
 
-          <Tooltip label="Impostazioni" openDelay={800} withArrow>
+          <Group gap="lg" wrap="nowrap">
             <Text
               component={RouterNavLink}
               to="/settings"
-              size="xs"
-              c={location.pathname === "/settings" ? "var(--color-text)" : "dimmed"}
+              size="sm"
+              c={
+                location.pathname === "/settings"
+                  ? "var(--color-text)"
+                  : "dimmed"
+              }
               fw={600}
               style={{ textDecoration: "none", whiteSpace: "nowrap" }}
             >
               Impostazioni
             </Text>
-          </Tooltip>
+            <Box
+              w={32}
+              h={32}
+              style={{
+                borderRadius: "50%",
+                background: "var(--color-surface-3)",
+                display: "grid",
+                placeItems: "center",
+              }}
+            >
+              <Text size="xs" fw={600} c="dimmed">
+                AD
+              </Text>
+            </Box>
+          </Group>
         </Group>
       </AppShell.Header>
 
@@ -87,71 +114,76 @@ export default function AppShellLayout() {
           background: "var(--color-surface)",
         }}
       >
-        <AppShell.Section grow component={ScrollArea}>
-          <NavLink
-            label="Dashboard"
-            leftSection={<IconLayoutDashboard size="1.1rem" stroke={1.5} />}
-            component={RouterNavLink}
-            to="/"
-            active={location.pathname === "/"}
-            styles={{
-              root: { borderRadius: "var(--radius-md)" },
-            }}
-          />
+        <AppShell.Section grow component={ScrollArea} type="hover" scrollbarSize={8}>
+          <Stack gap={2}>
+            <NavLink
+              label="Dashboard"
+              leftSection={<IconLayoutDashboard size="1.1rem" stroke={1.5} />}
+              component={RouterNavLink}
+              to="/"
+              active={location.pathname === "/"}
+              variant="light"
+            />
 
-          <Text
-            size="xs"
-            c="dimmed"
-            mt="lg"
-            mb={6}
-            px="sm"
-            fw={600}
-            tt="uppercase"
-            style={{ letterSpacing: "0.04em" }}
-          >
-            Moduli
-          </Text>
-
-          {modules.length === 0 ? (
-            <Text size="sm" c="dimmed" px="sm" py="xs">
-              Nessun modulo con interfaccia attivo.
+            <Text
+              size="xs"
+              c="dimmed"
+              mt="lg"
+              mb={4}
+              px="sm"
+              fw={600}
+              tt="uppercase"
+              className="mono-label"
+            >
+              Moduli
             </Text>
-          ) : (
-            modules.map((m) => (
-              <NavLink
-                key={m.name}
-                label={m.label}
-                description={m.name}
-                leftSection={
-                  <ThemeIcon variant="light" size="sm" color="gray">
-                    <IconPuzzle size="0.8rem" stroke={1.75} />
-                  </ThemeIcon>
-                }
-                component={RouterNavLink}
-                to={`/modules/${m.name}`}
-                active={location.pathname === `/modules/${m.name}`}
-                styles={{
-                  root: { borderRadius: "var(--radius-md)" },
-                }}
-              />
-            ))
-          )}
+
+            {modules.length === 0 ? (
+              <Text size="sm" c="dimmed" px="sm" py="xs">
+                Nessun modulo con interfaccia attivo.
+              </Text>
+            ) : (
+              modules.map((m) => {
+                const Icon = MODULE_ICONS[m.name] ?? IconPuzzle;
+                return (
+                  <NavLink
+                    key={m.name}
+                    label={m.label}
+                    description={m.name}
+                    leftSection={
+                      <ThemeIcon variant="light" size="sm" color="gray">
+                        <Icon size="0.8rem" stroke={1.75} />
+                      </ThemeIcon>
+                    }
+                    component={RouterNavLink}
+                    to={`/modules/${m.name}`}
+                    active={location.pathname === `/modules/${m.name}`}
+                    variant="light"
+                  />
+                );
+              })
+            )}
+          </Stack>
         </AppShell.Section>
 
         <AppShell.Section>
+          <Divider mb="sm" style={{ borderColor: "var(--color-border)" }} />
           <NavLink
             label="Impostazioni"
             leftSection={<IconSettings size="1.1rem" stroke={1.5} />}
             component={RouterNavLink}
             to="/settings"
             active={location.pathname === "/settings"}
-            styles={{
-              root: { borderRadius: "var(--radius-md)" },
-            }}
+            variant="light"
           />
-          <Text size="xs" c="dimmed" ta="center" mt="sm" className="tabular">
-            {config.brand.name} · v0.1.0
-          </Text>
+          <Group justify="center" gap="xs" mt="sm">
+            <Text size="xs" c="dimmed" className="mono-label">
+              {config.brand.name}
+            </Text>
+            <Text size="xs" c="dimmed" className="mono-label">
+              v0.1.0
+            </Text>
+          </Group>
         </AppShell.Section>
       </AppShell.Navbar>
 

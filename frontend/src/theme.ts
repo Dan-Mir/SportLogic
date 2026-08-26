@@ -12,8 +12,8 @@ export function buildTheme(config: AppConfig): MantineThemeOverride {
     },
     defaultRadius: "md",
     primaryShade: 6,
-    white: "oklch(100% 0 0)",
-    black: "oklch(24% 0.012 258)",
+    white: "var(--color-surface)",
+    black: "var(--color-text)",
     colors: {
       brand: config.brand.shades,
       dark: [
@@ -27,6 +27,18 @@ export function buildTheme(config: AppConfig): MantineThemeOverride {
         "#1A1E2E",
         "#12151F",
         "#0B0D14",
+      ],
+      gray: [
+        "#F6F7F9",
+        "#ECEEF2",
+        "#DDE0E6",
+        "#C8CDD6",
+        "#AEB5C2",
+        "#939CAC",
+        "#6F7A8C",
+        "#55606F",
+        "#3C4552",
+        "#232A35",
       ],
     },
     spacing: {
@@ -44,24 +56,45 @@ export function buildTheme(config: AppConfig): MantineThemeOverride {
       xl: "var(--radius-xl)",
     },
     shadows: {
-      xs: "0 1px 2px oklch(24% 0.012 258 / 0.04)",
-      sm: "0 1px 3px oklch(24% 0.012 258 / 0.06), 0 1px 2px oklch(24% 0.012 258 / 0.04)",
-      md: "0 4px 8px oklch(24% 0.012 258 / 0.06), 0 2px 4px oklch(24% 0.012 258 / 0.04)",
-      lg: "0 12px 24px oklch(24% 0.012 258 / 0.08), 0 4px 8px oklch(24% 0.012 258 / 0.05)",
-      xl: "0 20px 40px oklch(24% 0.012 258 / 0.10), 0 8px 16px oklch(24% 0.012 258 / 0.06)",
+      xs: "var(--shadow-xs)",
+      sm: "var(--shadow-sm)",
+      md: "var(--shadow-md)",
+      lg: "var(--shadow-lg)",
+      xl: "var(--shadow-lg)",
     },
     components: {
       Button: {
         defaultProps: { radius: "md" },
       },
       Card: {
-        defaultProps: { radius: "lg" },
+        defaultProps: { radius: "lg", bg: "var(--color-surface)" },
+        styles: {
+          root: {
+            border: "1px solid var(--color-border)",
+            boxShadow: "var(--shadow-xs)",
+          },
+        },
       },
       Paper: {
         defaultProps: { radius: "lg" },
       },
       ThemeIcon: {
         defaultProps: { radius: "md" },
+      },
+      NavLink: {
+        styles: {
+          root: {
+            borderRadius: "var(--radius-md)",
+            fontWeight: 500,
+          },
+        },
+      },
+      Title: {
+        styles: {
+          root: {
+            letterSpacing: "-0.015em",
+          },
+        },
       },
     },
   });

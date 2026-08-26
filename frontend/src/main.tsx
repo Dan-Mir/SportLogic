@@ -1,5 +1,7 @@
 import { MantineProvider } from "@mantine/core";
 import "@mantine/core/styles.css";
+import "@fontsource-variable/inter";
+import "@fontsource-variable/jetbrains-mono";
 import "./tokens.css";
 import React from "react";
 import ReactDOM from "react-dom/client";
