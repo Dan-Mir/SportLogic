@@ -17,28 +17,28 @@ export function buildTheme(config: AppConfig): MantineThemeOverride {
     colors: {
       brand: config.brand.shades,
       dark: [
-        "#C9CBD3",
-        "#A6AAB8",
-        "#82879B",
-        "#5F657E",
-        "#3D445F",
-        "#2A3049",
-        "#21263A",
-        "#1A1E2E",
-        "#12151F",
-        "#0B0D14",
+        "#D6D3CD",
+        "#B4B0A6",
+        "#8E8A7D",
+        "#6B675C",
+        "#49463D",
+        "#3A372F",
+        "#2D2A24",
+        "#211F1A",
+        "#161411",
+        "#0C0B09",
       ],
       gray: [
-        "#F6F7F9",
-        "#ECEEF2",
-        "#DDE0E6",
-        "#C8CDD6",
-        "#AEB5C2",
-        "#939CAC",
-        "#6F7A8C",
-        "#55606F",
-        "#3C4552",
-        "#232A35",
+        "#F7F5F1",
+        "#EFECE6",
+        "#E2DED6",
+        "#CEC8BD",
+        "#B6AFA1",
+        "#9C9588",
+        "#7A7468",
+        "#5C574E",
+        "#3F3B34",
+        "#24211C",
       ],
     },
     spacing: {
@@ -83,18 +83,14 @@ export function buildTheme(config: AppConfig): MantineThemeOverride {
       },
       NavLink: {
         styles: {
-          root: {
-            borderRadius: "var(--radius-md)",
-            fontWeight: 500,
-          },
+          root: { borderRadius: "var(--radius-md)", fontWeight: 500 },
         },
       },
       Title: {
-        styles: {
-          root: {
-            letterSpacing: "-0.015em",
-          },
-        },
+        styles: { root: { letterSpacing: "-0.02em" } },
+      },
+      Divider: {
+        styles: { root: { borderColor: "var(--color-border)" } },
       },
     },
   });

@@ -1,9 +1,11 @@
 import {
-  Card,
+  Box,
   ColorSwatch,
   Divider,
   Group,
+  Paper,
   SimpleGrid,
+  Stack,
   Text,
   Title,
   Tooltip,
@@ -14,32 +16,48 @@ export default function SettingsPage() {
   const config = useAppConfig();
 
   return (
-    <div>
-      <Title order={2} mb="lg">
+    <Stack gap="lg" maw={760}>
+      <Title order={1} size={30}>
         Impostazioni
       </Title>
 
-      <Card withBorder padding="lg" mb="md" bg="var(--color-surface)">
+      <Paper
+        p="xl"
+        radius="lg"
+        style={{
+          background: "var(--color-surface)",
+          border: "1px solid var(--color-border)",
+          boxShadow: "var(--shadow-xs)",
+        }}
+      >
         <Title order={4} mb="md">
           Branding
         </Title>
         <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="lg">
-          <div>
+          <Box>
             <Text size="sm" c="dimmed" mb={2}>
               Nome brand
             </Text>
             <Text fw={600}>{config.brand.name}</Text>
-          </div>
-          <div>
+          </Box>
+          <Box>
             <Text size="sm" c="dimmed" mb={2}>
               Dominio pubblico
             </Text>
             <Text fw={600}>{config.brand.publicDomain || "—"}</Text>
-          </div>
+          </Box>
         </SimpleGrid>
-      </Card>
+      </Paper>
 
-      <Card withBorder padding="lg" bg="var(--color-surface)">
+      <Paper
+        p="xl"
+        radius="lg"
+        style={{
+          background: "var(--color-surface)",
+          border: "1px solid var(--color-border)",
+          boxShadow: "var(--shadow-xs)",
+        }}
+      >
         <Title order={4} mb="md">
           Colore primario
         </Title>
@@ -51,10 +69,10 @@ export default function SettingsPage() {
           ))}
         </Group>
         <Divider my="lg" />
-        <Text size="xs" c="dimmed" className="tabular">
+        <Text size="xs" c="dimmed" className="mono-label">
           {config.brand.primaryColor}
         </Text>
-      </Card>
-    </div>
+      </Paper>
+    </Stack>
   );
 }

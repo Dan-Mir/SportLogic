@@ -1,8 +1,7 @@
 import {
-  ActionIcon,
+  Badge,
   Box,
   Button,
-  Card,
   Group,
   Paper,
   SimpleGrid,
@@ -14,143 +13,179 @@ import {
 import {
   IconArrowRight,
   IconCalendarEvent,
-  IconCash,
-  IconHeartbeat,
-  IconPuzzle,
+  IconShieldCheck,
   IconUserPlus,
-  IconUsers,
 } from "@tabler/icons-react";
+import { Link } from "react-router-dom";
 import { useAppConfig } from "../config";
-
-const stats = [
-  {
-    label: "Soci attivi",
-    icon: IconUsers,
-    color: "blue",
-    tint: "oklch(95% 0.03 250)",
-  },
-  {
-    label: "Prenotazioni oggi",
-    icon: IconCalendarEvent,
-    color: "teal",
-    tint: "oklch(96% 0.03 180)",
-  },
-  {
-    label: "Incassi del mese",
-    icon: IconCash,
-    color: "violet",
-    tint: "oklch(96% 0.03 300)",
-  },
-  {
-    label: "Certificati in scadenza",
-    icon: IconHeartbeat,
-    color: "red",
-    tint: "oklch(96% 0.03 20)",
-  },
-];
-
-const quickActions = [
-  { label: "Nuovo socio", icon: IconUserPlus, color: "brand" },
-  { label: "Nuova prenotazione", icon: IconCalendarEvent, color: "teal" },
-];
+import { moduleIcon } from "../moduleIcons";
 
 export default function Dashboard() {
   const config = useAppConfig();
+  const modules = config.modules.filter((m) => m.has_frontend);
+
+  const today = new Date().toLocaleDateString("it-IT", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+  });
 
   return (
-    <Stack gap="xl">
-      <Group justify="space-between" align="flex-end" wrap="wrap">
-        <div>
-          <Title order={2} mb={4}>
-            Benvenuto in {config.brand.name}
-          </Title>
-          <Text c="dimmed" size="sm">
-            Panoramica dell'impianto. I dati reali arriveranno con i moduli
-            corrispondenti (Fase 1).
+    <Stack gap="xl" maw={1120}>
+      <Group justify="space-between" align="flex-end" wrap="wrap" gap="md">
+        <Box>
+          <Text size="sm" c="dimmed" className="mono-label" mb={4} tt="uppercase">
+            {today}
           </Text>
-        </div>
-        <Group gap="xs">
-          {quickActions.map((a) => (
-            <Button
-              key={a.label}
-              variant="light"
-              color={a.color}
-              leftSection={<a.icon size="1rem" stroke={1.75} />}
-            >
-              {a.label}
-            </Button>
-          ))}
+          <Title order={1} size={34}>
+            Il tuo impianto, a colpo d'occhio
+          </Title>
+        </Box>
+        <Group gap="sm">
+          <Button
+            leftSection={<IconUserPlus size="1rem" stroke={1.75} />}
+            component={Link}
+            to="/modules/anagrafica"
+          >
+            Nuovo socio
+          </Button>
+          <Button
+            variant="light"
+            leftSection={<IconCalendarEvent size="1rem" stroke={1.75} />}
+            component={Link}
+            to="/modules/booking.fields"
+          >
+            Nuova prenotazione
+          </Button>
         </Group>
       </Group>
 
-      <SimpleGrid cols={{ base: 1, sm: 2, lg: 4 }} spacing="md">
-        {stats.map((s) => (
-          <Card
-            key={s.label}
-            padding="lg"
-            className="hover-lift"
-            bg="var(--color-surface)"
-          >
-            <Group justify="space-between" align="flex-start">
-              <ThemeIcon
-                variant="light"
-                color={s.color}
-                size={42}
-                radius="md"
+      <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="lg">
+        <Paper
+          p="xl"
+          radius="lg"
+          style={{
+            background: "var(--color-surface)",
+            border: "1px solid var(--color-border)",
+            boxShadow: "var(--shadow-xs)",
+          }}
+        >
+          <Group gap="sm" mb="lg">
+            <ThemeIcon variant="light" color="brand" size="lg">
+              <IconCalendarEvent size="1.2rem" stroke={1.6} />
+            </ThemeIcon>
+            <div>
+              <Title order={4}>Prossime attività</Title>
+              <Text size="xs" c="dimmed">
+                Corsi, campi e lezioni in calendario
+              </Text>
+            </div>
+          </Group>
+          <Stack gap="xs">
+            {[1, 2, 3].map((i) => (
+              <Group
+                key={i}
+                justify="space-between"
+                p="sm"
+                style={{
+                  background: "var(--color-surface-2)",
+                  borderRadius: "var(--radius-md)",
+                }}
               >
-                <s.icon size="1.3rem" stroke={1.6} />
-              </ThemeIcon>
-            </Group>
-            <Text fz={32} fw={700} mt="md" lh={1} className="tabular">
-              —
-            </Text>
-            <Text size="sm" c="dimmed" mt={4}>
-              {s.label}
-            </Text>
-          </Card>
-        ))}
-      </SimpleGrid>
+                <Text size="sm" c="dimmed" className="mono-label">
+                  — : —
+                </Text>
+                <Text size="sm" c="dimmed">
+                  Nessuna attività pianificata
+                </Text>
+              </Group>
+            ))}
+          </Stack>
+        </Paper>
 
-      <Card padding="lg" bg="var(--color-surface)">
-        <Group justify="space-between" mb="md">
-          <Title order={4}>Moduli attivi</Title>
-          <Text size="sm" c="dimmed" className="mono-label">
-            {config.modules.length} caricati
-          </Text>
-        </Group>
-
-        <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="sm">
-          {config.modules.map((m) => (
-            <Paper
-              key={m.name}
-              p="md"
-              radius="md"
-              className="hover-lift"
+        <Paper
+          p="xl"
+          radius="lg"
+          style={{
+            background: "var(--color-surface)",
+            border: "1px solid var(--color-border)",
+            boxShadow: "var(--shadow-xs)",
+          }}
+        >
+          <Group gap="sm" mb="lg">
+            <ThemeIcon variant="light" color="yellow" size="lg">
+              <IconShieldCheck size="1.2rem" stroke={1.6} />
+            </ThemeIcon>
+            <div>
+              <Title order={4}>Scadenze da attenzionare</Title>
+              <Text size="xs" c="dimmed">
+                Certificati medici e abbonamenti in scadenza
+              </Text>
+            </div>
+          </Group>
+          <Stack gap="xs">
+            <Group
+              justify="space-between"
+              p="sm"
               style={{
-                background: "var(--color-surface)",
-                border: "1px solid var(--color-border)",
+                background: "var(--color-surface-2)",
+                borderRadius: "var(--radius-md)",
               }}
             >
-              <Group gap="sm" wrap="nowrap">
-                <ThemeIcon variant="light" size="lg" color="gray">
-                  <IconPuzzle size="1.05rem" stroke={1.6} />
-                </ThemeIcon>
-                <Box style={{ flex: 1, minWidth: 0 }}>
-                  <Text fw={600} size="sm">
-                    {m.label}
-                  </Text>
-                  <Text size="xs" c="dimmed" className="mono-label">
-                    {m.name} · v{m.version}
-                  </Text>
-                </Box>
-                <ActionIcon variant="subtle" color="gray" size="md" radius="md">
-                  <IconArrowRight size="1rem" stroke={1.75} />
-                </ActionIcon>
-              </Group>
-            </Paper>
-          ))}
+              <Text size="sm" c="dimmed">
+                Tutto sotto controllo
+              </Text>
+              <Badge variant="light" color="gray">
+                nessuna
+              </Badge>
+            </Group>
+          </Stack>
+        </Paper>
+      </SimpleGrid>
+
+      <Box>
+        <Group justify="space-between" mb="md">
+          <Title order={3}>I tuoi moduli</Title>
+          <Text size="sm" c="dimmed" className="mono-label">
+            {modules.length} attivi
+          </Text>
+        </Group>
+        <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="md">
+          {modules.map((m) => {
+            const Icon = moduleIcon(m.name);
+            return (
+              <Paper
+                key={m.name}
+                component={Link}
+                to={`/modules/${m.name}`}
+                p="lg"
+                radius="lg"
+                style={{
+                  background: "var(--color-surface)",
+                  border: "1px solid var(--color-border)",
+                  boxShadow: "var(--shadow-xs)",
+                  textDecoration: "none",
+                  color: "inherit",
+                }}
+              >
+                <Group justify="space-between" mb="md">
+                  <ThemeIcon variant="light" color="gray" size="xl">
+                    <Icon size="1.3rem" stroke={1.6} />
+                  </ThemeIcon>
+                  <IconArrowRight size="1rem" stroke={1.5} style={{ color: "var(--color-text-faint)" }} />
+                </Group>
+                <Text fw={650} size="sm">
+                  {m.label}
+                </Text>
+                <Text size="xs" c="dimmed" mt={4} className="mono-label">
+                  {m.name} · v{m.version}
+                </Text>
+              </Paper>
+            );
+          })}
         </SimpleGrid>
-      </Card>
+      </Box>
     </Stack>
   );
 }
