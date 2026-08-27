@@ -13,6 +13,7 @@
     "@fontsource-variable/jetbrains-mono": "^5.3.0",
     "@mantine/colors-generator": "^7.13.0",
     "@mantine/core": "^7.13.0",
+    "@mantine/form": "^7.13.0",
     "@mantine/hooks": "^7.13.0",
     "@tabler/icons-react": "^3.5.0",
     "react": "^18.3.1",
