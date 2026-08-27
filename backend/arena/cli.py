@@ -66,6 +66,7 @@ def create_admin(email: str, password: str, full_name: str = "Amministratore") -
     from arena.modules.core.models import User
     from arena.modules.core.security import hash_password
 
+    email = email.strip().lower()
     session = get_session()
     user = session.scalar(select(User).where(User.email == email))
     if user is None:

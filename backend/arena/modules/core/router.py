@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from typing import Annotated
 
 import jwt
@@ -27,6 +28,8 @@ from arena.modules.core.security import (
     verify_password,
 )
 from arena.modules.core.settings_model import Setting
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/core", tags=["core"])
 
@@ -61,8 +64,16 @@ def settings() -> dict:
 
 @router.post("/auth/login", response_model=TokenPair)
 def login(payload: LoginRequest, db: DbSession) -> TokenPair:
-    user = db.scalar(select(User).where(User.email == payload.email))
-    if user is None or not verify_password(payload.password, user.hashed_password):
+    email = payload.email.strip().lower()
+    user = db.scalar(select(User).where(User.email == email))
+    if user is None:
+        logger.warning("login fallito: email '%s' non trovata", email)
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Email o password non corretti",
+        )
+    if not verify_password(payload.password, user.hashed_password):
+        logger.warning("login fallito: password errata per '%s'", payload.email)
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Email o password non corretti",
@@ -122,11 +133,12 @@ def create_user(
 ) -> User:
     if payload.role not in ROLES:
         raise HTTPException(status_code=400, detail=f"Ruolo non valido: {payload.role}")
-    if db.scalar(select(User).where(User.email == payload.email)) is not None:
+    email = payload.email.strip().lower()
+    if db.scalar(select(User).where(User.email == email)) is not None:
         raise HTTPException(status_code=409, detail="Email già registrata")
 
     user = User(
-        email=payload.email,
+        email=email,
         hashed_password=hash_password(payload.password),
         full_name=payload.full_name,
         role=payload.role,
