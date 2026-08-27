@@ -45,5 +45,39 @@ def bootstrap() -> None:
     bootstrap_wizard.run()
 
 
+@app.command()
+def migrate() -> None:
+    """Applica le migration di tutti i moduli attivi (tabella versioni per-modulo)."""
+    from arena.migrations import upgrade
+
+    applied = upgrade()
+    if applied:
+        console.print(f"[green]Migration applicate per: {', '.join(applied)}[/green]")
+    else:
+        console.print("[dim]Nessun modulo con migration.[/dim]")
+
+
+@app.command()
+def create_admin(email: str, password: str, full_name: str = "Amministratore") -> None:
+    """Crea (o aggiorna) un utente admin. Richiede le migration applicate."""
+    from sqlalchemy import select
+
+    from arena.db import get_session
+    from arena.modules.core.models import User
+    from arena.modules.core.security import hash_password
+
+    session = get_session()
+    user = session.scalar(select(User).where(User.email == email))
+    if user is None:
+        user = User(email=email, full_name=full_name, role="admin", hashed_password="")
+        session.add(user)
+    user.hashed_password = hash_password(password)
+    user.role = "admin"
+    user.is_active = True
+    session.commit()
+    session.close()
+    console.print(f"[green]Admin '{email}' pronto.[/green]")
+
+
 if __name__ == "__main__":
     app()

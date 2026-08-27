@@ -6,8 +6,10 @@ ENV PYTHONDONTWRITEBYTECODE=1 \
 WORKDIR /app
 
 COPY backend/ /app/
-RUN pip install --no-cache-dir ".[worker]"
+COPY deploy/api-entrypoint.sh /usr/local/bin/api-entrypoint
+RUN pip install --no-cache-dir ".[worker]" \
+    && chmod +x /usr/local/bin/api-entrypoint
 
 EXPOSE 8000
 
-CMD ["uvicorn", "arena.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["api-entrypoint"]

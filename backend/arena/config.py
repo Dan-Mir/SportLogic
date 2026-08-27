@@ -27,6 +27,9 @@ class Settings(BaseSettings):
     brand_name: str = "SportLogic"
     brand_primary_color: str = "#2563eb"
     public_domain: str = "impianto.local"
+    access_token_expire_minutes: int = 30
+    refresh_token_expire_days: int = 7
+    jwt_algorithm: str = "HS256"
 
     @field_validator("modules_enabled", mode="before")
     @classmethod

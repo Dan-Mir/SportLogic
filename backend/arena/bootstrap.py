@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+import secrets
 from pathlib import Path
 
 from rich.console import Console
@@ -55,6 +56,7 @@ def run() -> None:
             [
                 "# Generato da 'arena bootstrap'",
                 "ARENA_APP_NAME=SportLogic",
+                f"ARENA_SECRET_KEY={secrets.token_urlsafe(48)}",
                 f"ARENA_BRAND_NAME={brand_name}",
                 f"ARENA_BRAND_PRIMARY_COLOR={primary_color}",
                 f"ARENA_PUBLIC_DOMAIN={public_domain}",
