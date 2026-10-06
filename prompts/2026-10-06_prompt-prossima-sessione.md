@@ -64,8 +64,8 @@ cd frontend && npm run build
 
 ## Cosa fare adesso (Fase 2 — Soldi e salute)
 
-1. **Modulo `abbonamenti`**: entità SubscriptionPlan, Subscription, Payment;
-   migration; CRUD API; frontend base.
+1. **Modulo `abbonamenti`**: completare rate, rinnovi, ricevute e solleciti sul
+   modulo base già presente (piani, abbonamenti e pagamenti manuali).
 2. **Modulo `certificati_medici`**: upload file con cifratura at-rest (crypto
    lato app con chiave derivata da `secret_key`), scadenze, alert.
 3. **Notifiche email**: configurare SMTP (settings), rendere `send_email`

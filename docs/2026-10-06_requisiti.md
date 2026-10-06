@@ -75,7 +75,7 @@ canoni ricorrenti. L'installazione avviene su infrastruttura del cliente
 | anagrafica | core | ✅ attivo (Fase 1) | soci (CRUD), staff (CRUD), famiglie/minori/tutori (CRUD) |
 | corsi | core, anagrafica | 🟡 stub | corsi multi-livello, calendario, capienza |
 | booking.fields | core, anagrafica | 🟡 stub | campi/fasce orarie, tariffe stagionali |
-| abbonamenti | core, anagrafica | ⬜ da fare | piani, rate, solleciti, ricevute |
+| abbonamenti | core, anagrafica | 🟡 MVP in implementazione | piani, rate, pagamenti manuali |
 | certificati_medici | core, anagrafica | ⬜ da fare | upload, scadenze, cifratura |
 | iscrizioni | core, anagrafica | ⬜ da fare | portale pubblico, rinnovi |
 | tessere | core, anagrafica | ⬜ da fare | wallet, crediti, fidelity |
@@ -114,6 +114,8 @@ Legenda: ✅ implementato · 🟡 scheletro · ⬜ non iniziato
 - Piani (mensile, stagionale, a ingressi), rinnovi automatici.
 - Rate e rateizzazione; solleciti morosità (via notifiche).
 - Ricevute e quietanze; movimenti contabili.
+- MVP pagamenti: registrazione manuale di contanti, POS, bonifico, assegno o altro.
+- Pagamenti online e regole fiscali: esclusi dal primo MVP e da definire nell'ultima fase.
 
 ### 7.5 Certificati medici (GDPR art. 9)
 - Upload documento, data di validità, scadenze con alert automatici.

@@ -9,6 +9,7 @@ import MembersPage from "./pages/MembersPage";
 import ModulePage from "./pages/ModulePage";
 import SettingsPage from "./pages/SettingsPage";
 import UsersPage from "./pages/UsersPage";
+import SubscriptionsPage from "./pages/SubscriptionsPage";
 
 export default function App({ config }: { config: AppConfig }) {
   const auth = useAuthProvider();
@@ -21,6 +22,7 @@ export default function App({ config }: { config: AppConfig }) {
           <Route element={auth.token ? <AppShellLayout /> : <Navigate to="/login" replace />}>
             <Route path="/" element={<Dashboard />} />
             <Route path="/modules/anagrafica" element={<MembersPage />} />
+            <Route path="/modules/abbonamenti" element={<SubscriptionsPage />} />
             <Route path="/modules/:name" element={<ModulePage />} />
             <Route path="/users" element={<UsersPage />} />
             <Route path="/settings" element={<SettingsPage />} />

@@ -15,7 +15,7 @@ documentazione. In particolare:
   colore/dominio in tempo reale + export/import brand pack via UI.
 - **29 test backend** (tutti verdi), ruff pulito, frontend build OK.
 
-## Fase corrente: Fase 1 — COMPLETATA · prossima: Fase 2
+## Fase corrente: Fase 2 — abbonamenti in implementazione
 
 ---
 
@@ -68,7 +68,8 @@ documentazione. In particolare:
 ## 2. Cosa manca (Fase 2 → Fase 10)
 
 ### Fase 2 — Soldi e salute (prossima, priorità alta)
-- [ ] Modulo `abbonamenti` (piani, rate, rinnovi, ricevute).
+- [x] Modulo `abbonamenti` base (piani, abbonamenti e pagamenti manuali).
+- [ ] Rate, rinnovi, ricevute e solleciti.
 - [ ] Modulo `certificati_medici` (upload, scadenze, **cifratura at-rest**).
 - [ ] Notifiche email (MVP — rendere reale l'actor `send_email` in worker).
 
