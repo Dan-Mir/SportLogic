@@ -8,6 +8,7 @@ import LoginPage from "./pages/LoginPage";
 import MembersPage from "./pages/MembersPage";
 import ModulePage from "./pages/ModulePage";
 import SettingsPage from "./pages/SettingsPage";
+import UsersPage from "./pages/UsersPage";
 
 export default function App({ config }: { config: AppConfig }) {
   const auth = useAuthProvider();
@@ -16,11 +17,12 @@ export default function App({ config }: { config: AppConfig }) {
     <AppConfigContext.Provider value={config}>
       <AuthContext.Provider value={auth}>
         <Routes>
-          <Route path="/login" element={<LoginPage />} />
+          <Route path="/login" element={auth.token ? <Navigate to="/" replace /> : <LoginPage />} />
           <Route element={auth.token ? <AppShellLayout /> : <Navigate to="/login" replace />}>
             <Route path="/" element={<Dashboard />} />
             <Route path="/modules/anagrafica" element={<MembersPage />} />
             <Route path="/modules/:name" element={<ModulePage />} />
+            <Route path="/users" element={<UsersPage />} />
             <Route path="/settings" element={<SettingsPage />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />

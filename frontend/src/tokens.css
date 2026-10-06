@@ -1,38 +1,35 @@
-/* Hallmark · app: gestionale on-premise · tone: moderno-minimal caldo · anchor hue: dynamic (brand) */
+/* SportLogic: desktop operations UI. Neutral surfaces, one brand accent. */
 
 :root {
-  /* Paper / surfaces — caldo, non grigio-freddo */
-  --color-paper: oklch(96.6% 0.006 80);
-  --color-surface: oklch(99.2% 0.002 80);
-  --color-surface-2: oklch(94.2% 0.007 80);
-  --color-surface-3: oklch(90% 0.01 80);
-  --color-border: oklch(88.5% 0.009 80);
-  --color-border-strong: oklch(79% 0.014 80);
+  /* Neutral application chrome */
+  --color-paper: oklch(96.4% 0.008 255);
+  --color-surface: oklch(99.4% 0.002 255);
+  --color-surface-2: oklch(97.2% 0.007 255);
+  --color-surface-3: oklch(93.8% 0.011 255);
+  --color-border: oklch(88.1% 0.015 255);
+  --color-border-strong: oklch(73% 0.022 255);
 
   /* Text */
-  --color-text: oklch(24% 0.014 60);
-  --color-text-muted: oklch(45% 0.016 60);
-  --color-text-faint: oklch(60% 0.014 60);
+  --color-text: oklch(25% 0.022 255);
+  --color-text-muted: oklch(43% 0.02 255);
+  --color-text-faint: oklch(57% 0.016 255);
 
-  /* Fonts (bundled locally — no CDN, on-premise privacy) */
+  /* Fonts bundled locally for on-premise privacy. */
   --font-sans: "Inter Variable", "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono Variable", "JetBrains Mono", ui-monospace,
     "SF Mono", "Cascadia Code", "Segoe UI Mono", Consolas, monospace;
 
   /* Radii */
-  --radius-sm: 8px;
-  --radius-md: 12px;
-  --radius-lg: 16px;
-  --radius-xl: 20px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 14px;
 
   /* Shadows */
-  --shadow-xs: 0 1px 2px oklch(24% 0.014 60 / 0.05);
-  --shadow-sm: 0 1px 3px oklch(24% 0.014 60 / 0.07),
-    0 1px 2px oklch(24% 0.014 60 / 0.05);
-  --shadow-md: 0 8px 24px oklch(24% 0.014 60 / 0.08),
-    0 2px 6px oklch(24% 0.014 60 / 0.05);
-  --shadow-lg: 0 20px 48px oklch(24% 0.014 60 / 0.12),
-    0 6px 16px oklch(24% 0.014 60 / 0.06);
+  --shadow-xs: 0 1px 2px oklch(25% 0.022 255 / 0.05);
+  --shadow-sm: 0 2px 6px oklch(25% 0.022 255 / 0.06);
+  --shadow-md: 0 8px 22px oklch(25% 0.022 255 / 0.09);
+  --shadow-lg: 0 16px 40px oklch(25% 0.022 255 / 0.12);
 
   /* Easing + durations */
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
@@ -60,6 +57,47 @@ body {
   background: var(--color-paper);
   color: var(--color-text);
   font-family: var(--font-sans);
+  line-height: 1.45;
+}
+
+button, a { -webkit-tap-highlight-color: transparent; }
+
+a { color: inherit; }
+
+.desktop-surface {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-xs);
+}
+
+.page-intro {
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 1.25rem;
+}
+
+.section-kicker {
+  color: var(--color-text-faint);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.action-surface {
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-xs);
+  transition: border-color var(--dur-base) var(--ease-out), box-shadow var(--dur-base) var(--ease-out), transform var(--dur-base) var(--ease-out);
+}
+
+.action-surface:hover {
+  border-color: var(--color-border-strong);
+  box-shadow: var(--shadow-sm);
+  transform: translateY(-1px);
+}
+
+@media (max-width: 767px) {
+  .action-surface:hover { transform: none; }
 }
 
 ::selection {

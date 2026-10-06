@@ -3,7 +3,7 @@ from __future__ import annotations
 import os
 
 # Forza SQLite in memoria prima di importare il DB.
-os.environ["ARENA_DATABASE_URL"] = "sqlite+pysqlite:///:memory:"
+os.environ["SPORTLOGIC_DATABASE_URL"] = "sqlite+pysqlite:///:memory:"
 
 import pytest
 from fastapi.testclient import TestClient

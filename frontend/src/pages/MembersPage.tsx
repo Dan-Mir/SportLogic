@@ -113,10 +113,10 @@ export default function MembersPage() {
                   {m.fiscal_code ?? "CF non indicato"}
                 </Text>
                 <Text size="sm" c="dimmed">
-                  {m.email ?? "—"}
+                  {m.email ?? "Email non indicata"}
                 </Text>
                 <Text size="sm" c="dimmed">
-                  {m.city ? `${m.city}${m.phone ? ` · ${m.phone}` : ""}` : (m.phone ?? "—")}
+                  {m.city ? `${m.city}${m.phone ? ` · ${m.phone}` : ""}` : (m.phone ?? "Telefono non indicato")}
                 </Text>
               </Stack>
             </Paper>

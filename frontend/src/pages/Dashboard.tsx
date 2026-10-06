@@ -33,16 +33,17 @@ export default function Dashboard() {
 
   return (
     <Stack gap="xl" maw={1120}>
-      <Group justify="space-between" align="flex-end" wrap="wrap" gap="md">
-        <Box>
-          <Text size="sm" c="dimmed" className="mono-label" mb={4} tt="uppercase">
-            {today}
+      <Group className="page-intro" justify="space-between" align="flex-end" wrap="wrap" gap="md">
+        <Box maw={560}>
+          <Text size="sm" c="dimmed" mb={4}>
+            {today.charAt(0).toUpperCase() + today.slice(1)}
           </Text>
           <Title order={1} size={34}>
-            Il tuo impianto, a colpo d'occhio
+            Panoramica operativa
           </Title>
+          <Text size="sm" c="dimmed" mt={6}>Le informazioni principali del tuo impianto, in un unico punto.</Text>
         </Box>
-        <Group gap="sm">
+        <Group gap="sm" wrap="wrap">
           <Button
             leftSection={<IconUserPlus size="1rem" stroke={1.75} />}
             component={Link}
@@ -61,17 +62,16 @@ export default function Dashboard() {
         </Group>
       </Group>
 
-      <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="lg">
+      <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="md">
         <Paper
-          p="xl"
+          p={{ base: "md", sm: "lg" }}
           radius="lg"
+          className="action-surface"
           style={{
             background: "var(--color-surface)",
-            border: "1px solid var(--color-border)",
-            boxShadow: "var(--shadow-xs)",
           }}
         >
-          <Group gap="sm" mb="lg">
+          <Group gap="sm" mb="md">
             <ThemeIcon variant="light" color="brand" size="lg">
               <IconCalendarEvent size="1.2rem" stroke={1.6} />
             </ThemeIcon>
@@ -83,7 +83,7 @@ export default function Dashboard() {
             </div>
           </Group>
           <Stack gap="xs">
-            {[1, 2, 3].map((i) => (
+            {[1, 2].map((i) => (
               <Group
                 key={i}
                 justify="space-between"
@@ -93,11 +93,11 @@ export default function Dashboard() {
                   borderRadius: "var(--radius-md)",
                 }}
               >
-                <Text size="sm" c="dimmed" className="mono-label">
-                  — : —
-                </Text>
                 <Text size="sm" c="dimmed">
                   Nessuna attività pianificata
+                </Text>
+                <Text size="xs" c="dimmed" className="tabular">
+                  In attesa di calendario
                 </Text>
               </Group>
             ))}
@@ -105,12 +105,11 @@ export default function Dashboard() {
         </Paper>
 
         <Paper
-          p="xl"
+          p={{ base: "md", sm: "lg" }}
           radius="lg"
+          className="action-surface"
           style={{
             background: "var(--color-surface)",
-            border: "1px solid var(--color-border)",
-            boxShadow: "var(--shadow-xs)",
           }}
         >
           <Group gap="sm" mb="lg">
@@ -145,10 +144,13 @@ export default function Dashboard() {
       </SimpleGrid>
 
       <Box>
-        <Group justify="space-between" mb="md">
-          <Title order={3}>I tuoi moduli</Title>
-          <Text size="sm" c="dimmed" className="mono-label">
-            {modules.length} attivi
+        <Group justify="space-between" mb="md" align="flex-end">
+          <Box>
+            <Title order={3}>Aree di lavoro</Title>
+            <Text size="sm" c="dimmed" mt={3}>Accedi alle funzioni disponibili per il tuo ruolo.</Text>
+          </Box>
+          <Text size="sm" c="dimmed" className="tabular">
+            {modules.length} attive
           </Text>
         </Group>
         <SimpleGrid cols={{ base: 1, sm: 2, lg: 3 }} spacing="md">
@@ -161,10 +163,9 @@ export default function Dashboard() {
                 to={`/modules/${m.name}`}
                 p="lg"
                 radius="lg"
+                className="action-surface"
                 style={{
                   background: "var(--color-surface)",
-                  border: "1px solid var(--color-border)",
-                  boxShadow: "var(--shadow-xs)",
                   textDecoration: "none",
                   color: "inherit",
                 }}
@@ -179,7 +180,7 @@ export default function Dashboard() {
                   {m.label}
                 </Text>
                 <Text size="xs" c="dimmed" mt={4} className="mono-label">
-                  {m.name} · v{m.version}
+                  {m.name}
                 </Text>
               </Paper>
             );

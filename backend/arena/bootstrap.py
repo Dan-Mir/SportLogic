@@ -55,12 +55,12 @@ def run() -> None:
         "\n".join(
             [
                 "# Generato da 'arena bootstrap'",
-                "ARENA_APP_NAME=SportLogic",
-                f"ARENA_SECRET_KEY={secrets.token_urlsafe(48)}",
-                f"ARENA_BRAND_NAME={brand_name}",
-                f"ARENA_BRAND_PRIMARY_COLOR={primary_color}",
-                f"ARENA_PUBLIC_DOMAIN={public_domain}",
-                "ARENA_MODULES_ENABLED=" + ",".join(selected),
+                "SPORTLOGIC_APP_NAME=SportLogic",
+                f"SPORTLOGIC_SECRET_KEY={secrets.token_urlsafe(48)}",
+                f"SPORTLOGIC_BRAND_NAME={brand_name}",
+                f"SPORTLOGIC_BRAND_PRIMARY_COLOR={primary_color}",
+                f"SPORTLOGIC_PUBLIC_DOMAIN={public_domain}",
+                "SPORTLOGIC_MODULES_ENABLED=" + ",".join(selected),
             ]
         )
         + "\n",

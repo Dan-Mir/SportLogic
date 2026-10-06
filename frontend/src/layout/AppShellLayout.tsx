@@ -8,6 +8,7 @@ import {
   Stack,
   Text,
   Drawer,
+  Divider,
 } from "@mantine/core";
 import { useDisclosure } from "@mantine/hooks";
 import {
@@ -58,8 +59,9 @@ export default function AppShellLayout() {
           />
         );
       })}
-      <Box mt="xl" mb={4} px="sm">
-        <Text size="xs" c="dimmed" fw={600} tt="uppercase" className="mono-label">
+      <Divider my="md" />
+      <Box mb={4} px="sm">
+        <Text size="xs" c="dimmed" fw={600} className="section-kicker">
           Sistema
         </Text>
       </Box>
@@ -85,8 +87,7 @@ export default function AppShellLayout() {
         px={{ base: "md", sm: "xl" }}
         style={{
           borderBottom: "1px solid var(--color-border)",
-          background: "color-mix(in oklch, var(--color-surface) 90%, transparent)",
-          backdropFilter: "blur(14px)",
+          background: "var(--color-surface)",
         }}
       >
         <Group h="100%" justify="space-between" wrap="nowrap">
@@ -97,13 +98,13 @@ export default function AppShellLayout() {
               h={36}
               bg={config.brand.primaryColor}
               style={{
-                borderRadius: 10,
+                borderRadius: "var(--radius-md)",
                 display: "grid",
                 placeItems: "center",
                 flexShrink: 0,
               }}
             >
-              <Text c="white" fw={700} size="md">
+              <Text c="white" fw={750} size="md">
                 {config.brand.name.charAt(0).toUpperCase()}
               </Text>
             </Box>
@@ -111,14 +112,17 @@ export default function AppShellLayout() {
               <Text fw={700} size="sm" style={{ letterSpacing: "-0.01em" }}>
                 {config.brand.name}
               </Text>
-              <Text size="xs" c="dimmed" className="mono-label">
-                on-premise
+              <Text size="xs" c="dimmed">
+                Console operativa
               </Text>
             </Box>
           </Group>
 
           <Group gap="xl" wrap="nowrap">
             <Box ta="right" style={{ lineHeight: 1.2 }} visibleFrom="sm">
+              <Text size="xs" c="dimmed">
+                Sessione attiva
+              </Text>
               <Text size="sm" fw={600} className="tabular">
                 {today}
               </Text>
@@ -150,7 +154,7 @@ export default function AppShellLayout() {
         >
           <Box
             visibleFrom="sm"
-            w={260}
+            w={248}
             p="md"
             style={{
               borderRight: "1px solid var(--color-border)",
@@ -169,7 +173,9 @@ export default function AppShellLayout() {
           </Box>
 
           <Box style={{ flex: 1, minWidth: 0 }} p={{ base: "md", sm: "xl" }}>
-            <Outlet />
+            <Box maw={1240} mx="auto" w="100%">
+              <Outlet />
+            </Box>
           </Box>
         </Group>
       </AppShell.Main>
@@ -177,7 +183,7 @@ export default function AppShellLayout() {
       <Drawer
         opened={opened}
         onClose={close}
-        title={config.brand.name}
+        title="Navigazione"
         size={300}
         padding="md"
         hiddenFrom="sm"

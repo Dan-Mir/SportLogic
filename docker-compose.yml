@@ -28,8 +28,8 @@ services:
     env_file:
       - .env
     environment:
-      ARENA_DATABASE_URL: postgresql+psycopg://arena:arena@db:5432/arena
-      ARENA_REDIS_URL: redis://redis:6379/0
+      SPORTLOGIC_DATABASE_URL: postgresql+psycopg://arena:arena@db:5432/arena
+      SPORTLOGIC_REDIS_URL: redis://redis:6379/0
     depends_on:
       db:
         condition: service_healthy
@@ -46,8 +46,8 @@ services:
     env_file:
       - .env
     environment:
-      ARENA_DATABASE_URL: postgresql+psycopg://arena:arena@db:5432/arena
-      ARENA_REDIS_URL: redis://redis:6379/0
+      SPORTLOGIC_DATABASE_URL: postgresql+psycopg://arena:arena@db:5432/arena
+      SPORTLOGIC_REDIS_URL: redis://redis:6379/0
     depends_on:
       db:
         condition: service_healthy
@@ -64,10 +64,10 @@ services:
   caddy:
     image: caddy:2-alpine
     ports:
-      - "80:80"
-      - "443:443"
+      - "8080:80"
+      - "8443:443"
     environment:
-      ARENA_PUBLIC_DOMAIN: ${ARENA_PUBLIC_DOMAIN:-localhost}
+      SPORTLOGIC_PUBLIC_DOMAIN: ${SPORTLOGIC_PUBLIC_DOMAIN:-localhost}
     volumes:
       - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data

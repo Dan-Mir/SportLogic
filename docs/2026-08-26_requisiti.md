@@ -1,8 +1,8 @@
 # Requisiti — Gestionale impianti sportivi (2026-08-26)
 
 > Documento di riferimento dei requisiti. Aggiornato a fine sessione.
-> Nome di progetto **provvisorio**: "Arena" (codename da sostituire prima della
-> prima release pubblica).
+> Nome di progetto definitivo: **SportLogic**. Il package Python tecnico `arena`
+> resta invariato per compatibilità interna.
 
 ## 1. Visione e obiettivi
 
@@ -63,7 +63,7 @@ canoni ricorrenti. L'installazione avviene su infrastruttura del cliente
   è generato dinamicamente da `GET /api/modules`.
 - **Migration per modulo**: ogni modulo ha la propria tabella versioni Alembic,
   così abilitare/disabilitare un modulo non rompe la storia migrazioni.
-- **Config** (`arena/config.py`): pydantic-settings, prefisso `ARENA_`, file
+- **Config** (`arena/config.py`): pydantic-settings, prefisso `SPORTLOGIC_`, file
   `.env`. Nota: i campi lista usano `Annotated[list, NoDecode]` (vedi fix).
 - **Monorepo**: `backend/ frontend/ worker(=backend/arena/worker.py) deploy/ docs/ prompts/`.
 

@@ -5,7 +5,7 @@
 
 ---
 
-Sei l'LLM che sta sviluppando **Arena**, un gestionale open source on-premise
+Sei l'LLM che sta sviluppando **SportLogic**, un gestionale open source on-premise
 per impianti sportivi (palestre, piscine, centri sportivi). Licenza AGPL-3.0.
 
 ## Istruzioni iniziali (obbligatorie)

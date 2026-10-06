@@ -11,7 +11,7 @@ from dramatiq.worker import Worker
 
 logging.basicConfig(level=logging.INFO)
 
-broker = RedisBroker(url=os.environ.get("ARENA_REDIS_URL", "redis://localhost:6379/0"))
+broker = RedisBroker(url=os.environ.get("SPORTLOGIC_REDIS_URL", "redis://localhost:6379/0"))
 dramatiq.set_broker(broker)
 
 

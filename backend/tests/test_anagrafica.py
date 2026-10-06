@@ -8,7 +8,7 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import sessionmaker
 
 # Forza SQLite in memoria prima di importare moduli che toccano il DB.
-os.environ["ARENA_DATABASE_URL"] = "sqlite+pysqlite:///:memory:"
+os.environ["SPORTLOGIC_DATABASE_URL"] = "sqlite+pysqlite:///:memory:"
 
 from arena.db import Base  # noqa: E402
 from arena.modules.anagrafica.models import Family, Member  # noqa: E402

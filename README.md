@@ -1,8 +1,7 @@
 # SportLogic — gestionale open source per impianti sportivi
 
-> **Nota:** il codice usa ancora il prefisso tecnico `ARENA_*` e il package
-> Python `arena` (eredità del codename iniziale). La rinominazione interna è
-> prevista prima della prima release pubblica.
+> **Nota:** il package Python tecnico è ancora `arena` per compatibilità interna;
+> le variabili d'ambiente usano il prefisso pubblico `SPORTLOGIC_`.
 
 Gestionale **on-premise** per palestre, piscine e centri sportivi. Pensato per
 dare alle imprese il controllo totale dei propri dati (niente cloud, niente data
@@ -45,9 +44,8 @@ uvicorn arena.main:app --reload
 ## Struttura
 
 ```
-backend/      API FastAPI + registry moduli + event bus
+backend/      API FastAPI + registry moduli + event bus + worker Dramatiq
 frontend/     SPA React/TypeScript
-worker/       worker Dramatiq
 deploy/       docker-compose, Caddy, entrypoint
 docs/         requisiti e stato del progetto (versionati per data)
 prompts/      prompt di handoff per le sessioni LLM successive

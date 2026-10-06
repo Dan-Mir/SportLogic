@@ -4,14 +4,14 @@ import logging
 from typing import Annotated
 
 import jwt
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from arena.config import get_settings
 from arena.db import get_db
 from arena.modules.core.branding import BrandingPayload, BrandPack
-from arena.modules.core.deps import get_current_user, require_role
+from arena.modules.core.deps import get_client_ip, get_current_user, log_action, require_role
 from arena.modules.core.models import ROLES, User
 from arena.modules.core.schemas import (
     LoginRequest,
@@ -63,7 +63,11 @@ def settings() -> dict:
 
 
 @router.post("/auth/login", response_model=TokenPair)
-def login(payload: LoginRequest, db: DbSession) -> TokenPair:
+def login(
+    payload: LoginRequest,
+    request: Request,
+    db: DbSession,
+) -> TokenPair:
     email = payload.email.strip().lower()
     user = db.scalar(select(User).where(User.email == email))
     if user is None:
@@ -84,6 +88,7 @@ def login(payload: LoginRequest, db: DbSession) -> TokenPair:
             detail="Account disattivato",
         )
     subject = str(user.id)
+    log_action(db, user, "login", "user", subject, ip_address=get_client_ip(request))
     return TokenPair(
         access_token=create_access_token(subject),
         refresh_token=create_refresh_token(subject),
@@ -125,11 +130,20 @@ def me(user: Annotated[User, Depends(get_current_user)]) -> User:
     return user
 
 
+@router.get("/users", response_model=list[UserRead])
+def list_users(
+    db: DbSession,
+    _: Annotated[User, Depends(require_role("admin"))],
+) -> list[User]:
+    return list(db.scalars(select(User).order_by(User.full_name)))
+
+
 @router.post("/users", response_model=UserRead, status_code=status.HTTP_201_CREATED)
 def create_user(
     payload: UserCreate,
+    request: Request,
     db: DbSession,
-    _: Annotated[User, Depends(require_role("admin"))],
+    current_user: Annotated[User, Depends(require_role("admin"))],
 ) -> User:
     if payload.role not in ROLES:
         raise HTTPException(status_code=400, detail=f"Ruolo non valido: {payload.role}")
@@ -146,6 +160,10 @@ def create_user(
     db.add(user)
     db.commit()
     db.refresh(user)
+    log_action(
+        db, current_user, "user.create", "user", str(user.id),
+        detail=f"Ruolo: {payload.role}", ip_address=get_client_ip(request),
+    )
     return user
 
 
@@ -188,10 +206,17 @@ def get_branding(db: DbSession, _: Annotated[User, Depends(require_role("admin",
 @router.put("/branding", response_model=BrandPack)
 def update_branding(
     payload: BrandingPayload,
+    request: Request,
     db: DbSession,
-    _: Annotated[User, Depends(require_role("admin"))],
+    current_user: Annotated[User, Depends(require_role("admin"))],
 ) -> BrandPack:
-    return _put_branding(db, payload)
+    result = _put_branding(db, payload)
+    log_action(
+        db, current_user, "branding.update", "branding", "global",
+        detail=f"brand_name={payload.brand_name}",
+        ip_address=get_client_ip(request),
+    )
+    return result
 
 
 @router.get("/branding/export", response_model=BrandPack)
@@ -205,7 +230,14 @@ def export_brand_pack(
 @router.post("/branding/import", response_model=BrandPack)
 def import_brand_pack(
     pack: BrandPack,
+    request: Request,
     db: DbSession,
-    _: Annotated[User, Depends(require_role("admin"))],
+    current_user: Annotated[User, Depends(require_role("admin"))],
 ) -> BrandPack:
-    return _put_branding(db, BrandingPayload(**pack.model_dump()))
+    result = _put_branding(db, BrandingPayload(**pack.model_dump()))
+    log_action(
+        db, current_user, "branding.import", "branding", "global",
+        detail=f"brand_name={pack.brand_name}",
+        ip_address=get_client_ip(request),
+    )
+    return result

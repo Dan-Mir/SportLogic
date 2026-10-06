@@ -15,7 +15,7 @@ Desktop**, con frontend reale, deploy verificato e skill di design installata.
 ```
 backend/                 FastAPI + registry moduli + event bus + CLI
   arena/
-    config.py            pydantic-settings (ARENA_*, .env, NoDecode)
+    config.py            pydantic-settings (SPORTLOGIC_*, .env, NoDecode)
     db.py                SQLAlchemy (engine/session lazy)
     events.py            EventBus (subscribe/emit)
     main.py              app factory + /health + /api/modules
