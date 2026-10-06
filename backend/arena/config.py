@@ -32,6 +32,12 @@ class Settings(BaseSettings):
     jwt_algorithm: str = "HS256"
     document_encryption_key: str = ""
     document_storage_path: str = "data/medical-certificates"
+    smtp_host: str = ""
+    smtp_port: int = 587
+    smtp_username: str = ""
+    smtp_password: str = ""
+    smtp_from_email: str = ""
+    smtp_use_tls: bool = True
 
     @field_validator("modules_enabled", mode="before")
     @classmethod

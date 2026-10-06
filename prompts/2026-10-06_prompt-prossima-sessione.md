@@ -68,9 +68,8 @@ cd frontend && npm run build
    modulo base già presente (piani, abbonamenti e pagamenti manuali).
 2. **Modulo `certificati_medici`**: completare retention, alert e UI sul modulo
    base già presente (upload cifrato, metadata e download autorizzato).
-3. **Notifiche email**: configurare SMTP (settings), rendere `send_email`
-   funzionante, trigger alla creazione di un abbonamento o scadenza
-   certificato.
+3. **Notifiche email**: aggiungere template e trigger alla creazione di un
+   abbonamento o alla scadenza di un certificato sull'actor SMTP già operativo.
 
 In caso di ambiguità, scegli l'opzione più semplice e coerente con
 l'architettura esistente e documenta la scelta in `stato-progetto.md`.

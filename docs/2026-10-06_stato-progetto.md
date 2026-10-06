@@ -72,7 +72,8 @@ documentazione. In particolare:
 - [ ] Rate, rinnovi, ricevute e solleciti.
 - [x] Modulo `certificati_medici` base (upload, scadenze e **cifratura at-rest**).
 - [ ] Retention, alert automatici e UI dedicata.
-- [ ] Notifiche email (MVP — rendere reale l'actor `send_email` in worker).
+- [x] Actor `send_email` operativo con SMTP locale/relay configurabile.
+- [ ] Trigger automatici e template per scadenze/pagamenti.
 
 ### Fase 3 — Prenotazioni
 - [ ] `corsi` (multi-livello, calendario, capienza, liste d'attesa, istruttori).
