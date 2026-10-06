@@ -66,8 +66,8 @@ cd frontend && npm run build
 
 1. **Modulo `abbonamenti`**: completare rate, rinnovi, ricevute e solleciti sul
    modulo base già presente (piani, abbonamenti e pagamenti manuali).
-2. **Modulo `certificati_medici`**: upload file con cifratura at-rest (crypto
-   lato app con chiave derivata da `secret_key`), scadenze, alert.
+2. **Modulo `certificati_medici`**: completare retention, alert e UI sul modulo
+   base già presente (upload cifrato, metadata e download autorizzato).
 3. **Notifiche email**: configurare SMTP (settings), rendere `send_email`
    funzionante, trigger alla creazione di un abbonamento o scadenza
    certificato.

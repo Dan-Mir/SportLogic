@@ -70,7 +70,8 @@ documentazione. In particolare:
 ### Fase 2 — Soldi e salute (prossima, priorità alta)
 - [x] Modulo `abbonamenti` base (piani, abbonamenti e pagamenti manuali).
 - [ ] Rate, rinnovi, ricevute e solleciti.
-- [ ] Modulo `certificati_medici` (upload, scadenze, **cifratura at-rest**).
+- [x] Modulo `certificati_medici` base (upload, scadenze e **cifratura at-rest**).
+- [ ] Retention, alert automatici e UI dedicata.
 - [ ] Notifiche email (MVP — rendere reale l'actor `send_email` in worker).
 
 ### Fase 3 — Prenotazioni

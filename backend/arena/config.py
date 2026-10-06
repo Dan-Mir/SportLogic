@@ -30,6 +30,8 @@ class Settings(BaseSettings):
     access_token_expire_minutes: int = 30
     refresh_token_expire_days: int = 7
     jwt_algorithm: str = "HS256"
+    document_encryption_key: str = ""
+    document_storage_path: str = "data/medical-certificates"
 
     @field_validator("modules_enabled", mode="before")
     @classmethod

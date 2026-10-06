@@ -13,9 +13,16 @@ def discover_builtin() -> tuple:
     global _discovered, _BUILTIN
     if _discovered:
         return _BUILTIN
-    from arena.modules import abbonamenti, anagrafica, booking_fields, core, corsi
+    from arena.modules import (
+        abbonamenti,
+        anagrafica,
+        booking_fields,
+        certificati_medici,
+        core,
+        corsi,
+    )
 
-    _BUILTIN = (core, anagrafica, abbonamenti, corsi, booking_fields)
+    _BUILTIN = (core, anagrafica, abbonamenti, certificati_medici, corsi, booking_fields)
     for mod in _BUILTIN:
         registry.register(mod.manifest)
     _discovered = True
