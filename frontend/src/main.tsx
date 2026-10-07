@@ -1,14 +1,11 @@
-import { MantineProvider } from "@mantine/core";
+import { MantineProvider, createTheme } from "@mantine/core";
 import "@mantine/core/styles.css";
 import "@fontsource-variable/inter";
-import "@fontsource-variable/jetbrains-mono";
-import "./tokens.css";
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter } from "react-router-dom";
 import App from "./App";
 import { bootstrap } from "./api";
-import { buildTheme } from "./theme";
 
 async function start() {
   const root = document.getElementById("root")!;
@@ -23,7 +20,14 @@ async function start() {
 
   document.title = config.brand.name;
 
-  const theme = buildTheme(config);
+  const theme = createTheme({
+    primaryColor: "brand",
+    primaryShade: 6,
+    fontFamily: "'Inter Variable', sans-serif",
+    colors: {
+      brand: config.brand.shades,
+    },
+  });
 
   ReactDOM.createRoot(root).render(
     <React.StrictMode>
