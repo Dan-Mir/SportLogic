@@ -21,6 +21,7 @@ type Member = { id: number; first_name: string; last_name: string; fiscal_code: 
 type Plan = { id: number; name: string; billing_type: string; price: string; duration_days: number; included_entries: number | null; is_active: boolean };
 type Installment = { id: number; number: number; due_on: string; amount: string; paid_amount: string; status: string };
 type Subscription = { id: number; member_id: number; plan: Plan; starts_on: string; ends_on: string; status: string; installments?: Installment[] };
+type Certificate = { id: number; member_id: number; original_filename: string; content_type: string; file_size: number; valid_from: string | null; expires_on: string; consent_confirmed: boolean; notes: string | null };
 type User = { id: number; email: string; full_name: string; role: string; is_active: boolean };
 type BrandPack = { brand_name: string; brand_primary_color: string; public_domain: string | null };
 
@@ -65,6 +66,75 @@ function MembersPage() {
 function MemberModal({ opened, onClose, onCreated }: { opened: boolean; onClose: () => void; onCreated: () => void }) { const [saving, setSaving] = useState(false); const [error, setError] = useState<string | null>(null); async function submit(e: FormEvent<HTMLFormElement>) { e.preventDefault(); setSaving(true); setError(null); const data = new FormData(e.currentTarget); const value = (key: string) => String(data.get(key) || "").trim() || null; try { const response = await fetch("/api/anagrafica/members", { method: "POST", headers: { "Content-Type": "application/json", ...authHeaders() }, body: JSON.stringify({ first_name: value("first_name"), last_name: value("last_name"), fiscal_code: value("fiscal_code"), email: value("email"), phone: value("phone"), city: value("city") }) }); if (!response.ok) throw new Error(`Errore ${response.status}`); onCreated(); onClose(); } catch (err) { setError(err instanceof Error ? err.message : "Impossibile salvare il socio"); } finally { setSaving(false); } } return <Modal opened={opened} onClose={onClose} title="Nuovo socio" centered><form onSubmit={submit}><Stack>{error && <Alert color="red">{error}</Alert>}<SimpleGrid cols={2}><TextInput name="first_name" label="Nome" required /><TextInput name="last_name" label="Cognome" required /></SimpleGrid><TextInput name="fiscal_code" label="Codice fiscale" /><TextInput name="email" label="Email" type="email" /><SimpleGrid cols={2}><TextInput name="phone" label="Telefono" /><TextInput name="city" label="Città" /></SimpleGrid><Group justify="flex-end" mt="sm"><Button variant="default" onClick={onClose}>Annulla</Button><Button type="submit" loading={saving}>Salva socio</Button></Group></Stack></form></Modal>; }
 
 function SubscriptionsPage() { const [plans, setPlans] = useState<Plan[]>([]); const [subscriptions, setSubscriptions] = useState<Subscription[]>([]); const [loading, setLoading] = useState(true); const [error, setError] = useState<string | null>(null); const load = useCallback(async () => { setLoading(true); setError(null); try { const [plansRes, subscriptionsRes] = await Promise.all([fetch("/api/abbonamenti/plans", { headers: authHeaders() }), fetch("/api/abbonamenti/subscriptions", { headers: authHeaders() })]); if (!plansRes.ok || !subscriptionsRes.ok) throw new Error("Non è stato possibile caricare abbonamenti e piani."); setPlans(await plansRes.json()); setSubscriptions(await subscriptionsRes.json()); } catch (err) { setError(err instanceof Error ? err.message : "Errore di caricamento"); } finally { setLoading(false); } }, []); useEffect(() => { load(); }, [load]); const active = subscriptions.filter((subscription) => subscription.status === "active"); return <Stack gap="xl"><PageHeader title="Abbonamenti" description="Piani disponibili e abbonamenti attivi." actions={<Button disabled leftSection={<IconPlus size={17} />}>Nuovo abbonamento</Button>} />{error ? <Feedback type="error">{error}</Feedback> : loading ? <Feedback type="loading" /> : <><Box><Title order={2} size="h3" mb="md">Piani</Title>{plans.length === 0 ? <Feedback type="empty" title="Nessun piano configurato">Crea un piano dal modulo abbonamenti per iniziare.</Feedback> : <SimpleGrid cols={{ base: 1, sm: 2, xl: 3 }}>{plans.map((plan) => <Paper key={plan.id} className="plan-card" p="lg"><Group justify="space-between"><Box className="module-icon"><IconCreditCard size={20} /></Box><Status active={plan.is_active} /></Group><Text fw={650} mt="xl">{plan.name}</Text><Text size="xl" fw={700} mt={4}>{money.format(Number(plan.price))}</Text><Text c="dimmed" size="sm" mt={4}>{plan.duration_days} giorni · {plan.billing_type}{plan.included_entries ? ` · ${plan.included_entries} ingressi` : ""}</Text></Paper>)}</SimpleGrid>}</Box><Box><Title order={2} size="h3" mb="md">Abbonamenti attivi</Title>{active.length === 0 ? <Feedback type="empty" title="Nessun abbonamento attivo">Le nuove attivazioni saranno elencate qui.</Feedback> : <Paper withBorder radius="md" className="table-wrap"><Table highlightOnHover><Table.Thead><Table.Tr><Table.Th>Socio</Table.Th><Table.Th>Piano</Table.Th><Table.Th>Validità</Table.Th><Table.Th>Stato</Table.Th></Table.Tr></Table.Thead><Table.Tbody>{active.map((item) => <Table.Tr key={item.id}><Table.Td>Socio #{item.member_id}</Table.Td><Table.Td fw={600}>{item.plan.name}</Table.Td><Table.Td>{item.starts_on} - {item.ends_on}</Table.Td><Table.Td><Badge variant="light">{item.status}</Badge></Table.Td></Table.Tr>)}</Table.Tbody></Table></Paper>}</Box></>}</Stack>; }
+
+function CertificatesPage() {
+  const [certificates, setCertificates] = useState<Certificate[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [opened, modal] = useDisclosure(false);
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch("/api/certificati-medici", { headers: authHeaders() });
+      if (!response.ok) throw new Error(`Errore ${response.status}`);
+      setCertificates(await response.json());
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Errore di caricamento");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+  useEffect(() => { load(); }, [load]);
+  async function download(certificate: Certificate) {
+    const response = await fetch(`/api/certificati-medici/${certificate.id}/download`, { headers: authHeaders() });
+    if (!response.ok) return setError(`Errore ${response.status}`);
+    const url = URL.createObjectURL(await response.blob());
+    const anchor = document.createElement("a");
+    anchor.href = url;
+    anchor.download = certificate.original_filename;
+    anchor.click();
+    URL.revokeObjectURL(url);
+  }
+  async function remove(certificate: Certificate) {
+    if (!window.confirm(`Eliminare ${certificate.original_filename}?`)) return;
+    const response = await fetch(`/api/certificati-medici/${certificate.id}`, { method: "DELETE", headers: authHeaders() });
+    if (!response.ok) return setError(`Errore ${response.status}`);
+    load();
+  }
+  const today = new Date().toISOString().slice(0, 10);
+  const expiring = certificates.filter((certificate) => certificate.expires_on >= today && certificate.expires_on <= new Date(Date.now() + 30 * 86400000).toISOString().slice(0, 10)).length;
+  return <Stack gap="lg">
+    <PageHeader title="Certificati medici" description="Documenti sanitari cifrati e relative scadenze." actions={<Button leftSection={<IconPlus size={17} />} onClick={modal.open}>Carica certificato</Button>} />
+    {error && <Feedback type="error">{error}</Feedback>}
+    {loading ? <Feedback type="loading" /> : certificates.length === 0 ? <Feedback type="empty" title="Nessun certificato">Carica il primo certificato medico del registro.</Feedback> : <>
+      <Group><Badge color={expiring ? "orange" : "green"} variant="light">{expiring} in scadenza entro 30 giorni</Badge><Text size="sm" c="dimmed">{certificates.length} certificati registrati</Text></Group>
+      <Paper withBorder radius="md" className="table-wrap"><Table highlightOnHover><Table.Thead><Table.Tr><Table.Th>Documento</Table.Th><Table.Th>Socio</Table.Th><Table.Th>Scadenza</Table.Th><Table.Th>Consenso</Table.Th><Table.Th>Azioni</Table.Th></Table.Tr></Table.Thead><Table.Tbody>{certificates.map((certificate) => <Table.Tr key={certificate.id}><Table.Td fw={600}>{certificate.original_filename}</Table.Td><Table.Td>Socio #{certificate.member_id}</Table.Td><Table.Td><Badge color={certificate.expires_on < today ? "red" : "gray"} variant="light">{certificate.expires_on}</Badge></Table.Td><Table.Td>{certificate.consent_confirmed ? "Confermato" : "Mancante"}</Table.Td><Table.Td><Group gap="xs"><Button size="compact-sm" variant="subtle" onClick={() => download(certificate)}>Scarica</Button><Button size="compact-sm" variant="subtle" color="red" onClick={() => remove(certificate)}>Elimina</Button></Group></Table.Td></Table.Tr>)}</Table.Tbody></Table></Paper>
+    </>}
+    <CertificateModal opened={opened} onClose={modal.close} onCreated={load} />
+  </Stack>;
+}
+
+function CertificateModal({ opened, onClose, onCreated }: { opened: boolean; onClose: () => void; onCreated: () => void }) {
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setSaving(true);
+    setError(null);
+    try {
+      const response = await fetch("/api/certificati-medici", { method: "POST", headers: authHeaders(), body: new FormData(event.currentTarget) });
+      if (!response.ok) throw new Error(`Errore ${response.status}`);
+      onCreated();
+      onClose();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Impossibile caricare il certificato");
+    } finally {
+      setSaving(false);
+    }
+  }
+  return <Modal opened={opened} onClose={onClose} title="Carica certificato medico" centered><form onSubmit={submit}><Stack>{error && <Alert color="red">{error}</Alert>}<TextInput name="member_id" label="ID socio" type="number" min={1} required /><SimpleGrid cols={2}><TextInput name="valid_from" label="Valido dal" type="date" /><TextInput name="expires_on" label="Scade il" type="date" required /></SimpleGrid><TextInput name="notes" label="Note" /><TextInput name="file" label="Documento PDF o immagine" type="file" accept="application/pdf,image/jpeg,image/png,image/webp" required /><Text size="sm" c="dimmed">Il consenso al trattamento dei dati sanitari è obbligatorio.</Text><input type="hidden" name="consent_confirmed" value="true" /><Group justify="flex-end"><Button variant="default" onClick={onClose}>Annulla</Button><Button type="submit" loading={saving}>Carica documento</Button></Group></Stack></form></Modal>;
+}
 
 function SubscriptionsPageV2() {
   const [plans, setPlans] = useState<Plan[]>([]);
@@ -146,4 +216,4 @@ function Layout({ children }: { children: ReactNode }) { const config = useAppCo
 
 function Protected({ children }: { children: ReactNode }) { const { token } = useAuth(); return token ? <Layout>{children}</Layout> : <Navigate to="/login" replace />; }
 
-export default function App({ config }: { config: AppConfig }) { const auth = useAuthProvider(); return <AppConfigContext.Provider value={config}><AuthContext.Provider value={auth}><Routes><Route path="/login" element={<LoginPage />} /><Route path="/" element={<Protected><Dashboard /></Protected>} /><Route path="/modules/anagrafica" element={<Protected><MembersPage /></Protected>} /><Route path="/modules/abbonamenti" element={<Protected><SubscriptionsPageV2 /></Protected>} /><Route path="/modules/:name" element={<Protected><GenericModule /></Protected>} /><Route path="/users" element={<Protected><UsersPage /></Protected>} /><Route path="/settings" element={<Protected><SettingsPage /></Protected>} /><Route path="*" element={<Navigate to="/" replace />} /></Routes></AuthContext.Provider></AppConfigContext.Provider>; }
+export default function App({ config }: { config: AppConfig }) { const auth = useAuthProvider(); return <AppConfigContext.Provider value={config}><AuthContext.Provider value={auth}><Routes><Route path="/login" element={<LoginPage />} /><Route path="/" element={<Protected><Dashboard /></Protected>} /><Route path="/modules/anagrafica" element={<Protected><MembersPage /></Protected>} /><Route path="/modules/abbonamenti" element={<Protected><SubscriptionsPageV2 /></Protected>} /><Route path="/modules/certificati_medici" element={<Protected><CertificatesPage /></Protected>} /><Route path="/modules/:name" element={<Protected><GenericModule /></Protected>} /><Route path="/users" element={<Protected><UsersPage /></Protected>} /><Route path="/settings" element={<Protected><SettingsPage /></Protected>} /><Route path="*" element={<Navigate to="/" replace />} /></Routes></AuthContext.Provider></AppConfigContext.Provider>; }

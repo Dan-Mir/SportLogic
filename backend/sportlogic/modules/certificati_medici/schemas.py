@@ -24,3 +24,10 @@ class CertificateMetadata(BaseModel):
     valid_from: date | None = None
     consent_confirmed: bool = Field(description="Consenso esplicito al trattamento del documento")
     notes: str | None = None
+
+
+class CertificateUpdate(BaseModel):
+    expires_on: date | None = None
+    valid_from: date | None = None
+    consent_confirmed: bool | None = None
+    notes: str | None = None
