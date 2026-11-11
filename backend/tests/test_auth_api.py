@@ -54,6 +54,15 @@ def _login(client, email="admin@test.it", password="password") -> str:
     return r.json()["access_token"]
 
 
+def _create_user(client, token: str, email: str, role: str) -> None:
+    response = client.post(
+        "/api/core/users",
+        json={"email": email, "password": "password", "full_name": role.title(), "role": role},
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    assert response.status_code == 201, response.text
+
+
 def test_login_success(admin_client) -> None:
     r = admin_client.post(
         "/api/core/auth/login",
@@ -119,3 +128,33 @@ def test_create_user_requires_admin(admin_client) -> None:
         headers={"Authorization": f"Bearer {token}"},
     )
     assert r.status_code == 201
+
+
+def test_reception_cannot_manage_users_or_branding(admin_client) -> None:
+    admin_token = _login(admin_client)
+    _create_user(admin_client, admin_token, "reception@test.it", "reception")
+    reception_token = _login(admin_client, "reception@test.it", "password")
+    headers = {"Authorization": f"Bearer {reception_token}"}
+
+    assert admin_client.get("/api/core/users", headers=headers).status_code == 403
+    assert admin_client.get("/api/core/branding", headers=headers).status_code == 403
+    assert admin_client.put(
+        "/api/core/branding",
+        json={"brand_name": "Non autorizzato", "brand_primary_color": "#ABCDEF"},
+        headers=headers,
+    ).status_code == 403
+
+
+def test_gestore_can_read_but_not_update_branding(admin_client) -> None:
+    admin_token = _login(admin_client)
+    _create_user(admin_client, admin_token, "gestore@test.it", "gestore")
+    gestore_token = _login(admin_client, "gestore@test.it", "password")
+    headers = {"Authorization": f"Bearer {gestore_token}"}
+
+    assert admin_client.get("/api/core/branding", headers=headers).status_code == 200
+    assert admin_client.get("/api/core/branding/export", headers=headers).status_code == 200
+    assert admin_client.put(
+        "/api/core/branding",
+        json={"brand_name": "Non autorizzato", "brand_primary_color": "#ABCDEF"},
+        headers=headers,
+    ).status_code == 403
