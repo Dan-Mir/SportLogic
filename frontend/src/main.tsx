@@ -1,5 +1,6 @@
 import { MantineProvider, createTheme } from "@mantine/core";
 import "@mantine/core/styles.css";
+import "@mantine/core/styles.layer.css";
 import "@fontsource-variable/inter";
 import React from "react";
 import ReactDOM from "react-dom/client";
@@ -24,6 +25,13 @@ async function start() {
     primaryColor: "brand",
     primaryShade: 6,
     fontFamily: "'Inter Variable', sans-serif",
+    defaultRadius: "md",
+    headings: { fontFamily: "'Inter Variable', sans-serif", fontWeight: "650" },
+    components: {
+      Button: { defaultProps: { radius: "md" } },
+      TextInput: { defaultProps: { radius: "md" } },
+      PasswordInput: { defaultProps: { radius: "md" } },
+    },
     colors: {
       brand: config.brand.shades,
     },
@@ -31,7 +39,7 @@ async function start() {
 
   ReactDOM.createRoot(root).render(
     <React.StrictMode>
-      <MantineProvider theme={theme}>
+      <MantineProvider theme={theme} defaultColorScheme="dark">
         <BrowserRouter>
           <App config={config} />
         </BrowserRouter>

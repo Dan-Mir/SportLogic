@@ -1,21 +1,149 @@
-import { Navigate, Route, Routes } from "react-router-dom";
-import { AppConfig } from "./api";
-import { AppConfigContext } from "./config";
-import { AuthContext, useAuthProvider } from "./auth";
+import {
+  ActionIcon, Alert, AppShell, Avatar, Badge, Box, Button, Center, ColorInput,
+  Divider, Drawer, Group, Modal, NavLink, Paper, PasswordInput, Select,
+  SimpleGrid, Skeleton, Stack, Table, Text, TextInput, Textarea, Title,
+} from "@mantine/core";
+import { useDisclosure, useMediaQuery } from "@mantine/hooks";
+import {
+  IconAlertCircle, IconArrowRight, IconCalendarPlus, IconChevronRight,
+  IconCreditCard, IconDownload, IconHome2, IconLogout, IconMenu2, IconPlus,
+  IconSearch, IconSettings, IconUpload, IconUserPlus, IconUsers,
+} from "@tabler/icons-react";
+import { FormEvent, ReactNode, useCallback, useEffect, useState } from "react";
+import { Navigate, Route, Routes, useLocation, useNavigate, useParams } from "react-router-dom";
+import { AppConfig, ModuleInfo } from "./api";
+import { authHeaders, AuthContext, useAuth, useAuthProvider } from "./auth";
+import { AppConfigContext, useAppConfig } from "./config";
+import { moduleIcon } from "./moduleIcons";
+import "./app.css";
 
-// Base neutra post-refactoring: il contratto di routing e il gate di auth
-// restano stabili. Le pagine verranno rigenerate da zero (vedi
-// prompts/2026-10-07_brief-frontend.md) senza riferimenti al vecchio UI.
-export default function App({ config }: { config: AppConfig }) {
-  const auth = useAuthProvider();
+type Member = { id: number; first_name: string; last_name: string; fiscal_code: string | null; email: string | null; phone: string | null; city: string | null; is_active: boolean };
+type Plan = { id: number; name: string; billing_type: string; price: string; duration_days: number; included_entries: number | null; is_active: boolean };
+type Installment = { id: number; number: number; due_on: string; amount: string; paid_amount: string; status: string };
+type Subscription = { id: number; member_id: number; plan: Plan; starts_on: string; ends_on: string; status: string; installments?: Installment[] };
+type User = { id: number; email: string; full_name: string; role: string; is_active: boolean };
+type BrandPack = { brand_name: string; brand_primary_color: string; public_domain: string | null };
 
-  return (
-    <AppConfigContext.Provider value={config}>
-      <AuthContext.Provider value={auth}>
-        <Routes>
-          <Route path="*" element={<div>Frontend in rigenerazione.</div>} />
-        </Routes>
-      </AuthContext.Provider>
-    </AppConfigContext.Provider>
-  );
+const ROLES = ["admin", "gestore", "reception", "istruttore", "socio"];
+const money = new Intl.NumberFormat("it-IT", { style: "currency", currency: "EUR" });
+const date = new Intl.DateTimeFormat("it-IT", { day: "numeric", month: "long", year: "numeric" });
+
+function PageHeader({ title, description, actions }: { title: string; description?: string; actions?: ReactNode }) {
+  return <Group justify="space-between" align="flex-end" wrap="wrap" gap="md"><Box><Title order={1}>{title}</Title>{description && <Text c="dimmed" mt={4}>{description}</Text>}</Box>{actions}</Group>;
 }
+
+function Feedback({ type, title, children }: { type: "loading" | "empty" | "error"; title?: string; children?: ReactNode }) {
+  if (type === "loading") return <Paper className="state-panel"><Stack gap="sm"><Skeleton height={18} width="35%" /><Skeleton height={12} width="70%" /><Skeleton height={12} width="55%" /></Stack></Paper>;
+  if (type === "error") return <Alert color="red" icon={<IconAlertCircle size={18} />} title={title ?? "Impossibile caricare i dati"}>{children}</Alert>;
+  return <Paper className="state-panel"><Stack align="center" gap={6} py="lg"><IconUsers size={30} stroke={1.3} /><Text fw={600}>{title}</Text>{children && <Text c="dimmed" size="sm" ta="center">{children}</Text>}</Stack></Paper>;
+}
+
+function LoginPage() {
+  const { token, login } = useAuth(); const navigate = useNavigate();
+  const [email, setEmail] = useState(""); const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null); const [saving, setSaving] = useState(false);
+  const config = useAppConfig();
+  if (token) return <Navigate to="/" replace />;
+  async function submit(event: FormEvent) { event.preventDefault(); setError(null); if (!/^\S+@\S+\.\S+$/.test(email)) return setError("Inserisci un indirizzo email valido."); if (!password) return setError("Inserisci la password."); setSaving(true); try { await login(email, password); navigate("/"); } catch (err) { setError(err instanceof Error ? err.message : "Accesso non riuscito"); } finally { setSaving(false); } }
+  return <Center className="login-page"><Paper className="login-card" p="xl" radius="md"><Stack gap="xl"><Group gap="sm"><Box className="brand-mark" style={{ background: config.brand.primaryColor }}>{config.brand.name.slice(0, 1).toUpperCase()}</Box><Text fw={700} size="lg">{config.brand.name}</Text></Group><Box><Title order={1} size="h2">Accedi al gestionale</Title><Text c="dimmed" mt={6}>Usa le credenziali del tuo account staff.</Text></Box><form onSubmit={submit}><Stack gap="md">{error && <Alert color="red" icon={<IconAlertCircle size={16} />}>{error}</Alert>}<TextInput label="Email" type="email" value={email} onChange={(e) => setEmail(e.currentTarget.value)} autoComplete="email" required /><PasswordInput label="Password" value={password} onChange={(e) => setPassword(e.currentTarget.value)} autoComplete="current-password" required /><Button type="submit" loading={saving} fullWidth>Accedi</Button></Stack></form></Stack></Paper></Center>;
+}
+
+function Dashboard() {
+  const { modules } = useAppConfig(); const navigate = useNavigate(); const visible = modules.filter((module) => module.has_frontend);
+  return <Stack gap={54} className="dashboard-page"><Box className="dashboard-hero"><Box className="dashboard-hero-copy"><Text className="eyebrow">{date.format(new Date())}</Text><Title order={1}>Una vista chiara.<br /><em>Un impianto sotto controllo.</em></Title><Text className="hero-description">Tutto ciò che serve alla squadra, in un unico spazio operativo.</Text><Group className="hero-actions"><Button leftSection={<IconUserPlus size={17} />} onClick={() => navigate("/modules/anagrafica")}>Nuovo socio</Button><Button variant="subtle" leftSection={<IconCalendarPlus size={17} />} onClick={() => navigate("/modules/booking.fields")}>Nuova prenotazione</Button></Group></Box><Box className="dashboard-hero-image" role="img" aria-label="Struttura sportiva illuminata"><Box className="hero-image-caption"><Text fw={650}>SportLogic</Text><Text size="xs">La tua operatività, senza rumore.</Text></Box></Box></Box><SimpleGrid cols={{ base: 1, md: 2 }} spacing="md" className="overview-grid"><Paper className="overview-panel" p="lg"><Group justify="space-between" align="flex-start"><Box><Text className="eyebrow">In agenda</Text><Text fw={650} size="lg" mt="xs">Prossime attività</Text></Box><IconArrowRight size={18} /></Group><Text c="dimmed" size="sm" mt="xl">Le attività pianificate compariranno qui quando il calendario sarà disponibile.</Text></Paper><Paper className="overview-panel" p="lg"><Group justify="space-between" align="flex-start"><Box><Text className="eyebrow">Da verificare</Text><Text fw={650} size="lg" mt="xs">Scadenze da attenzionare</Text></Box><IconArrowRight size={18} /></Group><Text c="dimmed" size="sm" mt="xl">Le scadenze di abbonamenti e certificati compariranno in questa area.</Text></Paper></SimpleGrid><Box className="module-section"><Group justify="space-between" align="flex-end" mb="lg"><Box><Text className="eyebrow">Spazi operativi</Text><Title order={2} size="h2" mt={5}>Aree di lavoro</Title></Box><Text size="sm" c="dimmed">{visible.length} moduli disponibili</Text></Group>{visible.length === 0 ? <Feedback type="empty" title="Nessuna area disponibile">I moduli attivi saranno mostrati qui.</Feedback> : <SimpleGrid cols={{ base: 1, sm: 2, xl: 3 }} spacing="md">{visible.map((module) => <ModuleCard key={module.name} module={module} />)}</SimpleGrid>}</Box></Stack>;
+}
+
+function ModuleCard({ module }: { module: ModuleInfo }) { const navigate = useNavigate(); const Icon = moduleIcon(module.name); return <Paper className="module-card" p="lg" role="link" tabIndex={0} onClick={() => navigate(`/modules/${module.name}`)} onKeyDown={(e) => e.key === "Enter" && navigate(`/modules/${module.name}`)}><Group justify="space-between" align="flex-start"><Box className="module-icon"><Icon size={21} stroke={1.6} /></Box><IconChevronRight size={18} color="var(--mantine-color-dimmed)" /></Group><Text fw={650} mt="xl">{module.label}</Text><Text size="sm" c="dimmed" mt={4} lineClamp={2}>{module.description}</Text><Group justify="space-between" mt="lg"><Text size="xs" c="dimmed">{module.name}</Text><Text size="xs" className="module-open">Apri area</Text></Group></Paper>; }
+
+function MembersPage() {
+  const [members, setMembers] = useState<Member[]>([]); const [loading, setLoading] = useState(true); const [error, setError] = useState<string | null>(null); const [query, setQuery] = useState(""); const [opened, modal] = useDisclosure(false);
+  const load = useCallback(async (search = "") => { setLoading(true); setError(null); try { const response = await fetch(`/api/anagrafica/members${search ? `?q=${encodeURIComponent(search)}` : ""}`, { headers: authHeaders() }); if (!response.ok) throw new Error(`Errore ${response.status}`); setMembers(await response.json()); } catch (err) { setError(err instanceof Error ? err.message : "Errore di caricamento"); } finally { setLoading(false); } }, []);
+  useEffect(() => { load(); }, [load]);
+  return <Stack gap="lg"><PageHeader title="Soci" description="Anagrafica e recapiti dei soci registrati." actions={<Button leftSection={<IconPlus size={17} />} onClick={modal.open}>Nuovo socio</Button>} /><Group align="flex-end"><TextInput label="Cerca soci" placeholder="Nome, cognome o codice fiscale" leftSection={<IconSearch size={16} />} value={query} onChange={(e) => setQuery(e.currentTarget.value)} onKeyDown={(e) => e.key === "Enter" && load(query)} className="search-field" /><Button variant="default" onClick={() => load(query)}>Cerca</Button></Group>{error ? <Feedback type="error">{error}</Feedback> : loading ? <Feedback type="loading" /> : members.length === 0 ? <Feedback type="empty" title="Nessun socio registrato">Aggiungi il primo socio per iniziare a gestire iscrizioni e abbonamenti.</Feedback> : <Paper withBorder radius="md" className="table-wrap"><Table highlightOnHover verticalSpacing="sm"><Table.Thead><Table.Tr><Table.Th>Socio</Table.Th><Table.Th>Codice fiscale</Table.Th><Table.Th>Contatti</Table.Th><Table.Th>Città</Table.Th><Table.Th>Stato</Table.Th></Table.Tr></Table.Thead><Table.Tbody>{members.map((member) => <Table.Tr key={member.id}><Table.Td fw={600}>{member.last_name} {member.first_name}</Table.Td><Table.Td>{member.fiscal_code ?? "Non indicato"}</Table.Td><Table.Td><Text size="sm">{member.email ?? member.phone ?? "Non indicati"}</Text></Table.Td><Table.Td>{member.city ?? "-"}</Table.Td><Table.Td><Status active={member.is_active} /></Table.Td></Table.Tr>)}</Table.Tbody></Table></Paper>}<MemberModal opened={opened} onClose={modal.close} onCreated={() => load(query)} /></Stack>;
+}
+
+function MemberModal({ opened, onClose, onCreated }: { opened: boolean; onClose: () => void; onCreated: () => void }) { const [saving, setSaving] = useState(false); const [error, setError] = useState<string | null>(null); async function submit(e: FormEvent<HTMLFormElement>) { e.preventDefault(); setSaving(true); setError(null); const data = new FormData(e.currentTarget); const value = (key: string) => String(data.get(key) || "").trim() || null; try { const response = await fetch("/api/anagrafica/members", { method: "POST", headers: { "Content-Type": "application/json", ...authHeaders() }, body: JSON.stringify({ first_name: value("first_name"), last_name: value("last_name"), fiscal_code: value("fiscal_code"), email: value("email"), phone: value("phone"), city: value("city") }) }); if (!response.ok) throw new Error(`Errore ${response.status}`); onCreated(); onClose(); } catch (err) { setError(err instanceof Error ? err.message : "Impossibile salvare il socio"); } finally { setSaving(false); } } return <Modal opened={opened} onClose={onClose} title="Nuovo socio" centered><form onSubmit={submit}><Stack>{error && <Alert color="red">{error}</Alert>}<SimpleGrid cols={2}><TextInput name="first_name" label="Nome" required /><TextInput name="last_name" label="Cognome" required /></SimpleGrid><TextInput name="fiscal_code" label="Codice fiscale" /><TextInput name="email" label="Email" type="email" /><SimpleGrid cols={2}><TextInput name="phone" label="Telefono" /><TextInput name="city" label="Città" /></SimpleGrid><Group justify="flex-end" mt="sm"><Button variant="default" onClick={onClose}>Annulla</Button><Button type="submit" loading={saving}>Salva socio</Button></Group></Stack></form></Modal>; }
+
+function SubscriptionsPage() { const [plans, setPlans] = useState<Plan[]>([]); const [subscriptions, setSubscriptions] = useState<Subscription[]>([]); const [loading, setLoading] = useState(true); const [error, setError] = useState<string | null>(null); const load = useCallback(async () => { setLoading(true); setError(null); try { const [plansRes, subscriptionsRes] = await Promise.all([fetch("/api/abbonamenti/plans", { headers: authHeaders() }), fetch("/api/abbonamenti/subscriptions", { headers: authHeaders() })]); if (!plansRes.ok || !subscriptionsRes.ok) throw new Error("Non è stato possibile caricare abbonamenti e piani."); setPlans(await plansRes.json()); setSubscriptions(await subscriptionsRes.json()); } catch (err) { setError(err instanceof Error ? err.message : "Errore di caricamento"); } finally { setLoading(false); } }, []); useEffect(() => { load(); }, [load]); const active = subscriptions.filter((subscription) => subscription.status === "active"); return <Stack gap="xl"><PageHeader title="Abbonamenti" description="Piani disponibili e abbonamenti attivi." actions={<Button disabled leftSection={<IconPlus size={17} />}>Nuovo abbonamento</Button>} />{error ? <Feedback type="error">{error}</Feedback> : loading ? <Feedback type="loading" /> : <><Box><Title order={2} size="h3" mb="md">Piani</Title>{plans.length === 0 ? <Feedback type="empty" title="Nessun piano configurato">Crea un piano dal modulo abbonamenti per iniziare.</Feedback> : <SimpleGrid cols={{ base: 1, sm: 2, xl: 3 }}>{plans.map((plan) => <Paper key={plan.id} className="plan-card" p="lg"><Group justify="space-between"><Box className="module-icon"><IconCreditCard size={20} /></Box><Status active={plan.is_active} /></Group><Text fw={650} mt="xl">{plan.name}</Text><Text size="xl" fw={700} mt={4}>{money.format(Number(plan.price))}</Text><Text c="dimmed" size="sm" mt={4}>{plan.duration_days} giorni · {plan.billing_type}{plan.included_entries ? ` · ${plan.included_entries} ingressi` : ""}</Text></Paper>)}</SimpleGrid>}</Box><Box><Title order={2} size="h3" mb="md">Abbonamenti attivi</Title>{active.length === 0 ? <Feedback type="empty" title="Nessun abbonamento attivo">Le nuove attivazioni saranno elencate qui.</Feedback> : <Paper withBorder radius="md" className="table-wrap"><Table highlightOnHover><Table.Thead><Table.Tr><Table.Th>Socio</Table.Th><Table.Th>Piano</Table.Th><Table.Th>Validità</Table.Th><Table.Th>Stato</Table.Th></Table.Tr></Table.Thead><Table.Tbody>{active.map((item) => <Table.Tr key={item.id}><Table.Td>Socio #{item.member_id}</Table.Td><Table.Td fw={600}>{item.plan.name}</Table.Td><Table.Td>{item.starts_on} - {item.ends_on}</Table.Td><Table.Td><Badge variant="light">{item.status}</Badge></Table.Td></Table.Tr>)}</Table.Tbody></Table></Paper>}</Box></>}</Stack>; }
+
+function SubscriptionsPageV2() {
+  const [plans, setPlans] = useState<Plan[]>([]);
+  const [subscriptions, setSubscriptions] = useState<Subscription[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [opened, modal] = useDisclosure(false);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const [plansResponse, subscriptionsResponse] = await Promise.all([
+        fetch("/api/abbonamenti/plans", { headers: authHeaders() }),
+        fetch("/api/abbonamenti/subscriptions", { headers: authHeaders() }),
+      ]);
+      if (!plansResponse.ok || !subscriptionsResponse.ok) throw new Error("Impossibile caricare gli abbonamenti.");
+      setPlans(await plansResponse.json());
+      setSubscriptions(await subscriptionsResponse.json());
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Errore di caricamento");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+  const active = subscriptions.filter((subscription) => subscription.status === "active");
+
+  return <Stack gap="xl">
+    <PageHeader title="Abbonamenti" description="Piani, rate e rinnovi dei soci." actions={<Button leftSection={<IconPlus size={17} />} onClick={modal.open}>Nuovo abbonamento</Button>} />
+    {error ? <Feedback type="error">{error}</Feedback> : loading ? <Feedback type="loading" /> : <>
+      <Box>
+        <Title order={2} size="h3" mb="md">Piani</Title>
+        {plans.length === 0 ? <Feedback type="empty" title="Nessun piano configurato">Crea un piano dal modulo abbonamenti per iniziare.</Feedback> : <SimpleGrid cols={{ base: 1, sm: 2, xl: 3 }}>{plans.map((plan) => <Paper key={plan.id} className="plan-card" p="lg"><Group justify="space-between"><Box className="module-icon"><IconCreditCard size={20} /></Box><Status active={plan.is_active} /></Group><Text fw={650} mt="xl">{plan.name}</Text><Text size="xl" fw={700} mt={4}>{money.format(Number(plan.price))}</Text><Text c="dimmed" size="sm" mt={4}>{plan.duration_days} giorni · {plan.billing_type}{plan.included_entries ? ` · ${plan.included_entries} ingressi` : ""}</Text></Paper>)}</SimpleGrid>}
+      </Box>
+      <Box>
+        <Title order={2} size="h3" mb="md">Abbonamenti attivi</Title>
+        {active.length === 0 ? <Feedback type="empty" title="Nessun abbonamento attivo">Le nuove attivazioni saranno elencate qui.</Feedback> : <Paper withBorder radius="md" className="table-wrap"><Table highlightOnHover><Table.Thead><Table.Tr><Table.Th>Socio</Table.Th><Table.Th>Piano</Table.Th><Table.Th>Validità</Table.Th><Table.Th>Rate</Table.Th><Table.Th>Stato</Table.Th></Table.Tr></Table.Thead><Table.Tbody>{active.map((item) => <Table.Tr key={item.id}><Table.Td>Socio #{item.member_id}</Table.Td><Table.Td fw={600}>{item.plan.name}</Table.Td><Table.Td>{item.starts_on} - {item.ends_on}</Table.Td><Table.Td>{item.installments?.filter((installment) => installment.status !== "paid").length ?? 0} aperte</Table.Td><Table.Td><Badge variant="light">{item.status}</Badge></Table.Td></Table.Tr>)}</Table.Tbody></Table></Paper>}
+      </Box>
+    </>}
+    <SubscriptionModal opened={opened} onClose={modal.close} plans={plans} onCreated={load} />
+  </Stack>;
+}
+
+function SubscriptionModal({ opened, onClose, plans, onCreated }: { opened: boolean; onClose: () => void; plans: Plan[]; onCreated: () => void }) {
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  async function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setSaving(true);
+    setError(null);
+    const data = new FormData(event.currentTarget);
+    try {
+      const response = await fetch("/api/abbonamenti/subscriptions", { method: "POST", headers: { "Content-Type": "application/json", ...authHeaders() }, body: JSON.stringify({ member_id: Number(data.get("member_id")), plan_id: Number(data.get("plan_id")), starts_on: data.get("starts_on"), ends_on: data.get("ends_on"), installments_count: Number(data.get("installments_count") || 1) }) });
+      if (!response.ok) throw new Error(`Errore ${response.status}`);
+      onCreated();
+      onClose();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Impossibile creare l'abbonamento");
+    } finally {
+      setSaving(false);
+    }
+  }
+  return <Modal opened={opened} onClose={onClose} title="Nuovo abbonamento" centered><form onSubmit={submit}><Stack>{error && <Alert color="red">{error}</Alert>}<TextInput name="member_id" label="ID socio" type="number" min={1} required /><Select name="plan_id" label="Piano" data={plans.map((plan) => ({ value: String(plan.id), label: `${plan.name} · ${money.format(Number(plan.price))}` }))} required /><SimpleGrid cols={2}><TextInput name="starts_on" label="Inizio" type="date" required /><TextInput name="ends_on" label="Fine" type="date" required /></SimpleGrid><TextInput name="installments_count" label="Numero rate" type="number" min={1} max={24} defaultValue="1" required /><Group justify="flex-end" mt="sm"><Button variant="default" onClick={onClose}>Annulla</Button><Button type="submit" loading={saving} disabled={!plans.length}>Crea abbonamento</Button></Group></Stack></form></Modal>;
+}
+
+function UsersPage() { const [users, setUsers] = useState<User[]>([]); const [loading, setLoading] = useState(true); const [error, setError] = useState<string | null>(null); const [opened, modal] = useDisclosure(false); const load = useCallback(async () => { setLoading(true); setError(null); try { const response = await fetch("/api/core/users", { headers: authHeaders() }); if (!response.ok) throw new Error(`Errore ${response.status}`); setUsers(await response.json()); } catch (err) { setError(err instanceof Error ? err.message : "Errore di caricamento"); } finally { setLoading(false); } }, []); useEffect(() => { load(); }, [load]); return <Stack gap="lg"><PageHeader title="Utenti" description="Account e ruoli abilitati all'accesso." actions={<Button leftSection={<IconPlus size={17} />} onClick={modal.open}>Nuovo utente</Button>} />{error ? <Feedback type="error">{error}</Feedback> : loading ? <Feedback type="loading" /> : users.length === 0 ? <Feedback type="empty" title="Nessun utente registrato">Crea un account per abilitare un membro dello staff.</Feedback> : <Paper withBorder radius="md" className="table-wrap"><Table highlightOnHover><Table.Thead><Table.Tr><Table.Th>Nome</Table.Th><Table.Th>Email</Table.Th><Table.Th>Ruolo</Table.Th><Table.Th>Stato</Table.Th></Table.Tr></Table.Thead><Table.Tbody>{users.map((user) => <Table.Tr key={user.id}><Table.Td fw={600}>{user.full_name}</Table.Td><Table.Td>{user.email}</Table.Td><Table.Td><Badge variant="outline" color="gray">{user.role}</Badge></Table.Td><Table.Td><Status active={user.is_active} /></Table.Td></Table.Tr>)}</Table.Tbody></Table></Paper>}<UserModal opened={opened} onClose={modal.close} onCreated={load} /></Stack>; }
+
+function UserModal({ opened, onClose, onCreated }: { opened: boolean; onClose: () => void; onCreated: () => void }) { const [role, setRole] = useState("reception"); const [saving, setSaving] = useState(false); const [error, setError] = useState<string | null>(null); async function submit(e: FormEvent<HTMLFormElement>) { e.preventDefault(); setSaving(true); setError(null); const data = new FormData(e.currentTarget); try { const response = await fetch("/api/core/users", { method: "POST", headers: { "Content-Type": "application/json", ...authHeaders() }, body: JSON.stringify({ email: data.get("email"), password: data.get("password"), full_name: data.get("full_name"), role }) }); if (!response.ok) throw new Error(`Errore ${response.status}`); onCreated(); onClose(); } catch (err) { setError(err instanceof Error ? err.message : "Impossibile creare l'utente"); } finally { setSaving(false); } } return <Modal opened={opened} onClose={onClose} title="Nuovo utente" centered><form onSubmit={submit}><Stack>{error && <Alert color="red">{error}</Alert>}<TextInput name="full_name" label="Nome completo" required /><TextInput name="email" label="Email" type="email" required /><PasswordInput name="password" label="Password" required /><Select label="Ruolo" data={ROLES} value={role} onChange={(value) => setRole(value ?? "reception")} /><Group justify="flex-end" mt="sm"><Button variant="default" onClick={onClose}>Annulla</Button><Button type="submit" loading={saving}>Crea utente</Button></Group></Stack></form></Modal>; }
+
+function SettingsPage() { const config = useAppConfig(); const [brand, setBrand] = useState<BrandPack>({ brand_name: config.brand.name, brand_primary_color: config.brand.primaryColor, public_domain: config.brand.publicDomain }); const [loading, setLoading] = useState(true); const [saving, setSaving] = useState(false); const [message, setMessage] = useState<string | null>(null); const [error, setError] = useState<string | null>(null); const [opened, modal] = useDisclosure(false); const [importData, setImportData] = useState(""); const load = useCallback(async () => { setLoading(true); setError(null); try { const response = await fetch("/api/core/branding", { headers: authHeaders() }); if (!response.ok) throw new Error(`Errore ${response.status}`); setBrand(await response.json()); } catch (err) { setError(err instanceof Error ? err.message : "Errore di caricamento"); } finally { setLoading(false); } }, []); useEffect(() => { load(); }, [load]); async function save() { setSaving(true); setError(null); setMessage(null); try { const response = await fetch("/api/core/branding", { method: "PUT", headers: { "Content-Type": "application/json", ...authHeaders() }, body: JSON.stringify(brand) }); if (!response.ok) throw new Error(`Errore ${response.status}`); setMessage("Branding salvato. Ricarica la pagina per applicare il nuovo colore all'interfaccia."); } catch (err) { setError(err instanceof Error ? err.message : "Errore di salvataggio"); } finally { setSaving(false); } } async function exportPack() { setError(null); try { const response = await fetch("/api/core/branding/export", { headers: authHeaders() }); if (!response.ok) throw new Error(`Errore ${response.status}`); const blob = await response.blob(); const url = URL.createObjectURL(blob); const anchor = document.createElement("a"); anchor.href = url; anchor.download = "brand-pack.json"; anchor.click(); URL.revokeObjectURL(url); setMessage("Brand pack esportato."); } catch (err) { setError(err instanceof Error ? err.message : "Errore di esportazione"); } } async function importPack() { setError(null); setMessage(null); try { const payload = JSON.parse(importData); const response = await fetch("/api/core/branding/import", { method: "POST", headers: { "Content-Type": "application/json", ...authHeaders() }, body: JSON.stringify(payload) }); if (!response.ok) throw new Error(`Errore ${response.status}`); setBrand(await response.json()); setMessage("Brand pack importato."); modal.close(); } catch (err) { setError(err instanceof Error ? err.message : "Il JSON non è valido o non può essere importato"); } } return <Stack gap="lg"><PageHeader title="Impostazioni" description="Configurazione dell'identità dell'impianto." />{error && <Feedback type="error">{error}</Feedback>}{message && <Alert color="green">{message}</Alert>}{loading ? <Feedback type="loading" /> : <><Paper withBorder radius="md" p="lg" maw={720}><Title order={2} size="h3" mb="lg">Branding</Title><Stack><TextInput label="Nome brand" value={brand.brand_name} onChange={(e) => setBrand({ ...brand, brand_name: e.currentTarget.value })} /><ColorInput label="Colore primario" format="hex" value={brand.brand_primary_color} onChange={(value) => setBrand({ ...brand, brand_primary_color: value })} /><TextInput label="Dominio pubblico" value={brand.public_domain ?? ""} onChange={(e) => setBrand({ ...brand, public_domain: e.currentTarget.value || null })} /><Group justify="flex-end"><Button onClick={save} loading={saving}>Salva branding</Button></Group></Stack></Paper><Paper withBorder radius="md" p="lg" maw={720}><Title order={2} size="h3">Brand pack</Title><Text c="dimmed" size="sm" mt={4}>Esporta la configurazione corrente o importa un pacchetto JSON esistente.</Text><Group mt="lg"><Button variant="default" leftSection={<IconDownload size={17} />} onClick={exportPack}>Esporta brand pack</Button><Button variant="default" leftSection={<IconUpload size={17} />} onClick={modal.open}>Importa brand pack</Button></Group></Paper></>}<Modal opened={opened} onClose={modal.close} title="Importa brand pack" centered><Stack><Textarea label="JSON del brand pack" minRows={8} value={importData} onChange={(e) => setImportData(e.currentTarget.value)} /><Group justify="flex-end"><Button variant="default" onClick={modal.close}>Annulla</Button><Button disabled={!importData.trim()} onClick={importPack}>Importa</Button></Group></Stack></Modal></Stack>; }
+
+function GenericModule() { const { name } = useParams(); const { modules } = useAppConfig(); const module = modules.find((item) => item.name === name && item.has_frontend); if (!module) return <Feedback type="error" title="Modulo non disponibile">Il modulo richiesto non è attivo o non esiste.</Feedback>; const Icon = moduleIcon(module.name); return <Stack gap="lg"><PageHeader title={module.label} description={module.description} /><Paper withBorder radius="md" p="xl"><Group><Box className="module-icon"><Icon size={24} /></Box><Box><Text fw={650}>Versione {module.version}</Text><Text c="dimmed" size="sm">Modulo in sviluppo</Text></Box></Group></Paper></Stack>; }
+
+function Status({ active }: { active: boolean }) { return <Badge color={active ? "green" : "gray"} variant="light">{active ? "Attivo" : "Inattivo"}</Badge>; }
+
+function Layout({ children }: { children: ReactNode }) { const config = useAppConfig(); const { logout } = useAuth(); const navigate = useNavigate(); const location = useLocation(); const mobile = useMediaQuery("(max-width: 48em)"); const [opened, drawer] = useDisclosure(false); const initials = config.brand.name.slice(0, 2).toUpperCase(); const modules = config.modules.filter((module) => module.has_frontend); const nav = <Stack gap={3}><NavLink label="Dashboard" leftSection={<IconHome2 size={18} />} active={location.pathname === "/"} onClick={() => { navigate("/"); drawer.close(); }} />{modules.map((module) => { const Icon = moduleIcon(module.name); return <NavLink key={module.name} label={module.label} leftSection={<Icon size={18} />} active={location.pathname === `/modules/${module.name}`} onClick={() => { navigate(`/modules/${module.name}`); drawer.close(); }} />; })}<Divider my="sm" /><Text size="xs" c="dimmed" fw={700} px="sm">SISTEMA</Text><NavLink label="Utenti" leftSection={<IconUsers size={18} />} active={location.pathname === "/users"} onClick={() => { navigate("/users"); drawer.close(); }} /><NavLink label="Impostazioni" leftSection={<IconSettings size={18} />} active={location.pathname === "/settings"} onClick={() => { navigate("/settings"); drawer.close(); }} /></Stack>; return <AppShell header={{ height: 64 }} navbar={{ width: 240, breakpoint: "md", collapsed: { mobile: true } }} padding="lg"><AppShell.Header><Group h="100%" px="lg" justify="space-between"><Group gap="sm"><ActionIcon variant="subtle" color="gray" hiddenFrom="md" onClick={drawer.open} aria-label="Apri navigazione"><IconMenu2 size={20} /></ActionIcon><Box className="brand-mark small" style={{ background: config.brand.primaryColor }}>{initials}</Box><Text fw={700}>{config.brand.name}</Text></Group><Group gap="sm"><Avatar radius="xl" color="gray">ST</Avatar><Text size="sm" visibleFrom="sm">Staff</Text><ActionIcon variant="subtle" color="gray" onClick={() => { logout(); navigate("/login"); }} aria-label="Esci"><IconLogout size={19} /></ActionIcon></Group></Group></AppShell.Header><AppShell.Navbar p="sm">{nav}</AppShell.Navbar><Drawer opened={opened} onClose={drawer.close} size={260} title={config.brand.name} hiddenFrom="md">{nav}</Drawer><AppShell.Main><Box className="page-content">{children}</Box></AppShell.Main></AppShell>; }
+
+function Protected({ children }: { children: ReactNode }) { const { token } = useAuth(); return token ? <Layout>{children}</Layout> : <Navigate to="/login" replace />; }
+
+export default function App({ config }: { config: AppConfig }) { const auth = useAuthProvider(); return <AppConfigContext.Provider value={config}><AuthContext.Provider value={auth}><Routes><Route path="/login" element={<LoginPage />} /><Route path="/" element={<Protected><Dashboard /></Protected>} /><Route path="/modules/anagrafica" element={<Protected><MembersPage /></Protected>} /><Route path="/modules/abbonamenti" element={<Protected><SubscriptionsPageV2 /></Protected>} /><Route path="/modules/:name" element={<Protected><GenericModule /></Protected>} /><Route path="/users" element={<Protected><UsersPage /></Protected>} /><Route path="/settings" element={<Protected><SettingsPage /></Protected>} /><Route path="*" element={<Navigate to="/" replace />} /></Routes></AuthContext.Provider></AppConfigContext.Provider>; }
