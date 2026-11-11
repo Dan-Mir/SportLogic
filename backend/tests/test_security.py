@@ -3,7 +3,7 @@ from __future__ import annotations
 import jwt
 import pytest
 
-from arena.modules.core.security import (
+from sportlogic.modules.core.security import (
     create_access_token,
     create_refresh_token,
     decode_token,

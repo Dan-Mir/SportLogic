@@ -2,13 +2,15 @@ services:
   db:
     image: postgres:16-alpine
     environment:
-      POSTGRES_USER: arena
-      POSTGRES_PASSWORD: arena
-      POSTGRES_DB: arena
+      POSTGRES_USER: sportlogic
+      POSTGRES_PASSWORD: sportlogic
+      POSTGRES_DB: sportlogic
     volumes:
       - pgdata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U arena"]
+      test: ["CMD-SHELL", "pg_isready -U sportlogic"]
       interval: 5s
       timeout: 5s
       retries: 10
@@ -28,7 +30,7 @@ services:
     env_file:
       - .env
     environment:
-      SPORTLOGIC_DATABASE_URL: postgresql+psycopg://arena:arena@db:5432/arena
+      SPORTLOGIC_DATABASE_URL: postgresql+psycopg://sportlogic:sportlogic@db:5432/sportlogic
       SPORTLOGIC_REDIS_URL: redis://redis:6379/0
     depends_on:
       db:
@@ -42,11 +44,11 @@ services:
     build:
       context: .
       dockerfile: backend/Dockerfile
-    command: ["arena-worker"]
+    command: ["sportlogic-worker"]
     env_file:
       - .env
     environment:
-      SPORTLOGIC_DATABASE_URL: postgresql+psycopg://arena:arena@db:5432/arena
+      SPORTLOGIC_DATABASE_URL: postgresql+psycopg://sportlogic:sportlogic@db:5432/sportlogic
       SPORTLOGIC_REDIS_URL: redis://redis:6379/0
     depends_on:
       db:

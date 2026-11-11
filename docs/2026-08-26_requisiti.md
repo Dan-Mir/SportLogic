@@ -1,7 +1,7 @@
 # Requisiti — Gestionale impianti sportivi (2026-08-26)
 
 > Documento di riferimento dei requisiti. Aggiornato a fine sessione.
-> Nome di progetto definitivo: **SportLogic**. Il package Python tecnico `arena`
+> Nome di progetto definitivo: **SportLogic**. Il package Python tecnico `sportlogic`
 > resta invariato per compatibilità interna.
 
 ## 1. Visione e obiettivi
@@ -55,17 +55,17 @@ canoni ricorrenti. L'installazione avviene su infrastruttura del cliente
 
 - **Monolito modulare** (non microservizi): un container API, uno worker, uno
   frontend; i moduli sono package Python con `ModuleManifest`.
-- **Registry moduli** (`arena/modules/registry.py`): risoluzione topologica
+- **Registry moduli** (`sportlogic/modules/registry.py`): risoluzione topologica
   delle dipendenze, rilevamento cicli, enable/disable con controllo reverse-dep.
-- **Event bus** (`arena/events.py`): subscribe/emit per agganciare plugin
+- **Event bus** (`sportlogic/events.py`): subscribe/emit per agganciare plugin
   (tornelli, fiscale, chatbot) senza toccare il core.
 - **`apply_enabled()`** monta solo i router dei moduli attivi; il menu frontend
   è generato dinamicamente da `GET /api/modules`.
 - **Migration per modulo**: ogni modulo ha la propria tabella versioni Alembic,
   così abilitare/disabilitare un modulo non rompe la storia migrazioni.
-- **Config** (`arena/config.py`): pydantic-settings, prefisso `SPORTLOGIC_`, file
+- **Config** (`sportlogic/config.py`): pydantic-settings, prefisso `SPORTLOGIC_`, file
   `.env`. Nota: i campi lista usano `Annotated[list, NoDecode]` (vedi fix).
-- **Monorepo**: `backend/ frontend/ worker(=backend/arena/worker.py) deploy/ docs/ prompts/`.
+- **Monorepo**: `backend/ frontend/ worker(=backend/sportlogic/worker.py) deploy/ docs/ prompts/`.
 
 ## 6. Moduli
 

@@ -3,7 +3,7 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "arena"
+name = "sportlogic"
 version = "0.1.0"
 description = "Gestionale open source on-premise per impianti sportivi"
 readme = "README.md"
@@ -38,12 +38,12 @@ worker = [
 ]
 
 [project.scripts]
-arena = "arena.cli:app"
-arena-worker = "arena.worker:main"
+sportlogic = "sportlogic.cli:app"
+sportlogic-worker = "sportlogic.worker:main"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["arena*"]
+include = ["sportlogic*"]
 
 [tool.ruff]
 line-length = 100

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from arena.events import EventBus
+from sportlogic.events import EventBus
 
 
 def test_subscribe_and_emit() -> None:

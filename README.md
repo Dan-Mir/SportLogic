@@ -1,6 +1,6 @@
 # SportLogic — gestionale open source per impianti sportivi
 
-> **Nota:** il package Python tecnico è ancora `arena` per compatibilità interna;
+> **Nota:** il package Python tecnico è ancora `sportlogic` per compatibilità interna;
 > le variabili d'ambiente usano il prefisso pubblico `SPORTLOGIC_`.
 
 Gestionale **on-premise** per palestre, piscine e centri sportivi. Pensato per
@@ -37,8 +37,8 @@ function calling (LLM locale via Ollama).
 ```bash
 docker compose up -d          # db, redis, ollama
 cd backend && pip install -e ".[dev]"
-arena bootstrap               # wizard: scegli i moduli, genera .env
-uvicorn arena.main:app --reload
+sportlogic bootstrap               # wizard: scegli i moduli, genera .env
+uvicorn sportlogic.main:app --reload
 ```
 
 ## Struttura

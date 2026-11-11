@@ -10,10 +10,10 @@ from sqlalchemy.orm import sessionmaker
 # Forza SQLite in memoria prima di importare moduli che toccano il DB.
 os.environ["SPORTLOGIC_DATABASE_URL"] = "sqlite+pysqlite:///:memory:"
 
-from arena.db import Base  # noqa: E402
-from arena.modules.anagrafica.models import Family, Member  # noqa: E402
-from arena.modules.core.models import User  # noqa: E402
-from arena.modules.core.security import hash_password  # noqa: E402
+from sportlogic.db import Base  # noqa: E402
+from sportlogic.modules.anagrafica.models import Family, Member  # noqa: E402
+from sportlogic.modules.core.models import User  # noqa: E402
+from sportlogic.modules.core.security import hash_password  # noqa: E402
 
 
 @pytest.fixture()
@@ -52,7 +52,7 @@ def test_family_relation(session) -> None:
     family = Family(name="Famiglia Rossi")
     session.add_all([member, family])
     session.flush()
-    from arena.modules.anagrafica.models import FamilyMember
+    from sportlogic.modules.anagrafica.models import FamilyMember
 
     family.members.append(FamilyMember(member_id=member.id, relation="figlio"))
     session.commit()

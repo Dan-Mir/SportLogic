@@ -8,12 +8,12 @@ os.environ["SPORTLOGIC_MODULES_ENABLED"] = "core,anagrafica,abbonamenti"
 import pytest
 from fastapi.testclient import TestClient
 
-import arena.db as db
-from arena.db import Base
-from arena.main import create_app
-from arena.modules.anagrafica.models import Member
-from arena.modules.core.models import User
-from arena.modules.core.security import hash_password
+import sportlogic.db as db
+from sportlogic.db import Base
+from sportlogic.main import create_app
+from sportlogic.modules.anagrafica.models import Member
+from sportlogic.modules.core.models import User
+from sportlogic.modules.core.security import hash_password
 
 
 @pytest.fixture()

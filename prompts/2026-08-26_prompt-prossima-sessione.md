@@ -16,12 +16,12 @@ per impianti sportivi (palestre, piscine, centri sportivi). Licenza AGPL-3.0.
 2. Leggi `README.md` per struttura e comandi.
 3. Riprendi dall'ultimo stato e prosegui con i "Prossimi passi concreti".
 4. **Non cambiare stack o convenzioni**: segui ciò che esiste già:
-   - Backend FastAPI + SQLAlchemy 2 + Alembic in `backend/arena/`.
-   - Moduli in `backend/arena/modules/<nome>/` con `module.py` (manifest
+   - Backend FastAPI + SQLAlchemy 2 + Alembic in `backend/sportlogic/`.
+   - Moduli in `backend/sportlogic/modules/<nome>/` con `module.py` (manifest
      `ModuleManifest`), eventuale `router.py`, `__init__.py` che espone
      `manifest` e `router`.
-   - Registrazione in `discover_builtin()` in `backend/arena/modules/__init__.py`.
-   - Event bus in `arena/events.py`, config in `arena/config.py`.
+   - Registrazione in `discover_builtin()` in `backend/sportlogic/modules/__init__.py`.
+   - Event bus in `sportlogic/events.py`, config in `sportlogic/config.py`.
    - Frontend React/Mantine in `frontend/src/` (router, `AppConfigContext`,
      `api.ts`).
 

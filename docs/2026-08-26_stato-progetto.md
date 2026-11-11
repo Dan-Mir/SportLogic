@@ -14,14 +14,14 @@ Desktop**, con frontend reale, deploy verificato e skill di design installata.
 ### 1.1 Scaffolding monorepo
 ```
 backend/                 FastAPI + registry moduli + event bus + CLI
-  arena/
+  sportlogic/
     config.py            pydantic-settings (SPORTLOGIC_*, .env, NoDecode)
     db.py                SQLAlchemy (engine/session lazy)
     events.py            EventBus (subscribe/emit)
     main.py              app factory + /health + /api/modules
     worker.py            worker Dramatiq (Redis) + actor send_email
     bootstrap.py         wizard di installazione (rich, pulizia ANSI)
-    cli.py               arena modules / enable / disable / bootstrap
+    cli.py               sportlogic modules / enable / disable / bootstrap
     modules/
       base.py            ModuleManifest (dataclass)
       registry.py        ModuleRegistry (risoluzione topologica, cicli, reverse-dep)

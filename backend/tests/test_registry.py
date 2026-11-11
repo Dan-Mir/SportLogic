@@ -2,8 +2,8 @@ from __future__ import annotations
 
 import pytest
 
-from arena.modules.base import ModuleManifest
-from arena.modules.registry import ModuleError, ModuleRegistry
+from sportlogic.modules.base import ModuleManifest
+from sportlogic.modules.registry import ModuleError, ModuleRegistry
 
 
 def make(name: str, deps: list[str] | None = None) -> ModuleManifest:
