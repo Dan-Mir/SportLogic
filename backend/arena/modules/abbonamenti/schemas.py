@@ -8,6 +8,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 BillingType = Literal["monthly", "seasonal", "entries", "custom"]
 PaymentMethod = Literal["cash", "pos", "bank_transfer", "check", "other"]
+InstallmentStatus = Literal["pending", "partial", "paid", "overdue"]
 
 
 class PlanBase(BaseModel):
@@ -50,10 +51,40 @@ class SubscriptionCreate(BaseModel):
     status: Literal["active", "paused", "expired", "cancelled"] = "active"
     auto_renew: bool = False
     notes: str | None = None
+    installments_count: int = Field(default=1, ge=1, le=24)
+
+
+class RenewalCreate(BaseModel):
+    starts_on: date | None = None
+    plan_id: int | None = None
+    notes: str | None = None
+
+
+class InstallmentRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    subscription_id: int
+    number: int
+    due_on: date
+    amount: Decimal
+    paid_amount: Decimal
+    status: InstallmentStatus
+
+
+class ReceiptRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    payment_id: int
+    receipt_number: str
+    issued_at: datetime
+    amount: Decimal
 
 
 class PaymentCreate(BaseModel):
     amount: Decimal = Field(gt=0, decimal_places=2)
+    installment_id: int | None = None
     paid_at: datetime | None = None
     method: PaymentMethod = "cash"
     reference: str | None = Field(default=None, max_length=120)
@@ -66,6 +97,7 @@ class PaymentRead(PaymentCreate):
     id: int
     subscription_id: int
     status: str
+    receipt: ReceiptRead | None = None
 
 
 class SubscriptionRead(SubscriptionCreate):
@@ -74,3 +106,4 @@ class SubscriptionRead(SubscriptionCreate):
     id: int
     plan: PlanRead
     payments: list[PaymentRead] = []
+    installments: list[InstallmentRead] = []
